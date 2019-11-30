@@ -1,11 +1,12 @@
 
 import { EventEmitter } from '@angular/core';
+import APP_CONFIG from '../../app.config';
 import { Link } from './link';
 import { Node } from './node';
 import * as d3 from 'd3';
 
 const FORCES = {
-  LINKS: 1 / 50,
+  LINKS: APP_CONFIG.GRAVITY,
   COLLISION: 1,
   CHARGE: -1
 };

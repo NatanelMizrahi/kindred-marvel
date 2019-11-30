@@ -13,9 +13,11 @@ export class Node implements d3.SimulationNodeDatum {
   fy?: number | null;
 
   id: string;
-  linkCount = 0;
+  linkCount: number;
+
   constructor(id) {
     this.id = id;
+    this.linkCount = 0;
   }
 
   normal = () => {

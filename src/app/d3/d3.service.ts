@@ -13,20 +13,17 @@ export class D3Service {
 
   /** A method to bind a pan and zoom behaviour to an svg element */
   applyZoomableBehaviour(svgElement, containerElement) {
-    let svg;
-    let container;
-    let zoomed;
-    let zoom;
 
-    svg = d3.select(svgElement);
-    container = d3.select(containerElement);
 
-    zoomed = () => {
+    const svg = d3.select(svgElement);
+    const container = d3.select(containerElement);
+
+    const zoomed = () => {
       const transform = d3.event.transform;
       container.attr('transform', 'translate(' + transform.x + ',' + transform.y + ') scale(' + transform.k + ')');
     };
 
-    zoom = d3.zoom().on('zoom', zoomed);
+    const zoom = d3.zoom().on('zoom', zoomed);
     svg.call(zoom);
   }
 

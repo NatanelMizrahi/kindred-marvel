@@ -6,6 +6,8 @@ import { GraphComponent } from './visuals/graph/graph.component';
 import { NodeVisualComponent } from './visuals/shared/node-visual/node-visual.component';
 import { LinkVisualComponent } from './visuals/shared/link-visual/link-visual.component';
 import { D3Service, DraggableDirective, ZoomableDirective} from './d3';
+import { D3TooltipModule } from 'ngx-d3-tooltip';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -17,7 +19,9 @@ import { D3Service, DraggableDirective, ZoomableDirective} from './d3';
     ZoomableDirective
   ],
   imports: [
-    BrowserModule
+    BrowserModule,
+    D3TooltipModule,
+    HttpClientModule,
   ],
   providers: [D3Service],
   bootstrap: [AppComponent]

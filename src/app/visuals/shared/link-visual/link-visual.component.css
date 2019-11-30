@@ -1,4 +1,5 @@
 .link {
-  stroke-width: 1;
+  stroke-width: 2;
   stroke: rgb(222,237,250);
+  z-index: 300;
 }
