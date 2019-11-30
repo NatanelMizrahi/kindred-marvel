@@ -1,7 +1,8 @@
 import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, AfterViewInit, HostListener} from '@angular/core';
 import { D3Service } from '../../d3/d3.service';
 import { ForceDirectedGraph} from '../../d3/models/force-directed-graph';
-import { Node } from '../../d3/models/node';
+import { Node, Link } from '../../d3/models';
+import {RenderService} from '../../shared/render.service';
 
 
 @Component({
@@ -11,8 +12,8 @@ import { Node } from '../../d3/models/node';
   styleUrls: ['./graph.component.css']
 })
 export class GraphComponent implements OnInit, AfterViewInit {
-  @Input('nodes') nodes;
-  @Input('links') links;
+  @Input('nodes') nodes: Node[];
+  @Input('links') links: Link[];
   graph: ForceDirectedGraph;
   private _options: { width, height } = { width: 800, height: 600 };
 
@@ -20,9 +21,17 @@ export class GraphComponent implements OnInit, AfterViewInit {
     this.graph.initSimulation(this.options);
   }
 
-  constructor(private ref: ChangeDetectorRef, private d3Service: D3Service) { }
-
+  constructor(private ref: ChangeDetectorRef,
+              private d3Service: D3Service,
+              private renderService: RenderService) {
+    this.renderService.resetGraph.subscribe(resetMessage => {
+      this.graph.simulation.stop();
+      this.ngOnInit();
+    });
+  }
   ngOnInit() {
+    console.log("resetting simulation");
+
     /** Receiving an initialized simulated graph from our custom d3 service */
     this.graph = this.d3Service.getForceDirectedGraph(this.nodes, this.links, this.options);
     this.graph.ticker.subscribe((d) => {

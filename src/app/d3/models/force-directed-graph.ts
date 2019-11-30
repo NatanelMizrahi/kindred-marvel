@@ -61,6 +61,12 @@ export class ForceDirectedGraph {
     );
   }
 
+  resetSimulation(options) {
+    this.simulation = null;
+    this.initSimulation(options);
+    console.log(this.nodes, this.links);
+  }
+
   initSimulation(options) {
     if (!options || !options.width || !options.height) {
       throw new Error('missing options when initializing simulation');
@@ -81,7 +87,6 @@ export class ForceDirectedGraph {
             .strength(FORCES.COLLISION)
             .radius((d: Node) => d.r + 5).iterations(2)
         );
-      ;
 
       // Connecting the d3 ticker to an angular event emitter
       this.simulation.on('tick', function() {

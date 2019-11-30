@@ -1,6 +1,6 @@
 const APP_CONFIG = {
   N : 100,
-  GRAVITY: 0.02,
+  GRAVITY: 0.002,
   SPECTRUM: [
     // "rgb(222,237,250)"
     'rgb(176,212,243)',

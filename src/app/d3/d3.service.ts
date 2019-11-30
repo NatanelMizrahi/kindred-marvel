@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {ForceDirectedGraph, Link, Node} from './models';
 import * as d3 from 'd3';
+import {Subject} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'

@@ -24,19 +24,19 @@ export class ApiService {
   getCharacters(charIds: string[]) {
     return forkJoin(charIds.map(this.getCharacter));
   }
-  getEvents(route , filter: Filter = {}) {
+  getEvents(filter: Filter = {}) {
     const p = x => { console.dir(x); return x; };
     const responseToArray = res => res.data.results;
     const eventsToCharacters = events => events.map(event =>
       ({
-        id: event.id,
+        id: event.id.toString(),
         title: event.title,
         sum: event.description,
         thumbnailURL: `${event.thumbnail.path}.${event.thumbnail.extension}`,
         characters: event.characters.items.map(this.getCharAttributes)
       })
     );
-    return this.http.get(this.apiUrl(route, filter))
+    return this.http.get(this.apiUrl('events', filter))
       .pipe(
         map(responseToArray),
         map(eventsToCharacters)
