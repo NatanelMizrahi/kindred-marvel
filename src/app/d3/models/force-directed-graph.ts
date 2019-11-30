@@ -8,7 +8,7 @@ const FORCES = {
   LINKS: 1 / 50,
   COLLISION: 1,
   CHARGE: -1
-}
+};
 
 export class ForceDirectedGraph {
   public ticker: EventEmitter<d3.Simulation<Node, Link>> = new EventEmitter();
@@ -22,6 +22,21 @@ export class ForceDirectedGraph {
     this.links = links;
 
     this.initSimulation(options);
+  }
+
+  connectNodes(source, target) {
+    let link;
+
+    if (!this.nodes[source] || !this.nodes[target]) {
+      throw new Error('One of the nodes does not exist');
+    }
+
+    link = new Link(source, target);
+    this.simulation.stop();
+    this.links.push(link);
+    this.simulation.alphaTarget(0.3).restart();
+
+    this.initLinks();
   }
 
   initNodes() {
@@ -40,6 +55,7 @@ export class ForceDirectedGraph {
     // Initializing the links force simulation
     this.simulation.force('links',
       d3.forceLink(this.links)
+        .id((d: Node) => d.id)
         .strength(FORCES.LINKS)
     );
   }
@@ -55,13 +71,19 @@ export class ForceDirectedGraph {
 
       // Creating the force simulation and defining the charges
       this.simulation = d3.forceSimulation()
-        .force("charge",
+        .force('charge',
           d3.forceManyBody()
-            .strength(FORCES.CHARGE)
+            .strength((d: Node) => FORCES.CHARGE * d.r)
+        )
+        .force('collide',
+          d3.forceCollide()
+            .strength(FORCES.COLLISION)
+            .radius((d: Node) => d.r + 5).iterations(2)
         );
+      ;
 
       // Connecting the d3 ticker to an angular event emitter
-      this.simulation.on('tick', function () {
+      this.simulation.on('tick', function() {
         ticker.emit(this);
       });
 
@@ -70,7 +92,7 @@ export class ForceDirectedGraph {
     }
 
     /** Updating the central force of the simulation */
-    this.simulation.force("centers", d3.forceCenter(options.width / 2, options.height / 2));
+    this.simulation.force('centers', d3.forceCenter(options.width / 2, options.height / 2));
 
     /** Restarting the simulation internal timer */
     this.simulation.restart();
