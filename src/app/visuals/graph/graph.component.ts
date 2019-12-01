@@ -12,11 +12,11 @@ import {RenderService} from '../../shared/render.service';
   styleUrls: ['./graph.component.css']
 })
 export class GraphComponent implements OnInit, AfterViewInit {
+  private _options: { width, height } = { width: 800, height: 600 };
   @Input('nodes') nodes: Node[];
   @Input('links') links: Link[];
   graph: ForceDirectedGraph;
   nodeMap: Map<string, Node>;
-  private _options: { width, height } = { width: 800, height: 600 };
 
   @HostListener('window:resize', ['$event']) onResize(event) {
     this.graph.initSimulation(this.options);
@@ -25,10 +25,12 @@ export class GraphComponent implements OnInit, AfterViewInit {
   constructor(private ref: ChangeDetectorRef,
               private d3Service: D3Service,
               private renderService: RenderService) {
+
     this.renderService.resetGraph.subscribe(resetMessage => {
       this.graph.simulation.stop();
       this.ngOnInit();
     });
+
     this.renderService.fixCoords.subscribe(forcedCoords => {
       const node = this.nodeMap.get(forcedCoords.nodeId);
       node.fx = forcedCoords.x;
@@ -37,10 +39,10 @@ export class GraphComponent implements OnInit, AfterViewInit {
 
   }
   ngOnInit() {
-    console.log("resetting simulation");
+    console.log('Starting simulation');
+    this.graph = this.d3Service.getForceDirectedGraph(this.nodes, this.links, this.options);
     /** Receiving an initialized simulated graph from our custom d3 service */
     this.nodeMap = new Map(this.nodes.map(node => [node.id, node]));
-    this.graph = this.d3Service.getForceDirectedGraph(this.nodes, this.links, this.options);
     this.graph.ticker.subscribe(d => {
       this.ref.markForCheck();
     });

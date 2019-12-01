@@ -1,10 +1,5 @@
 const APP_CONFIG = {
   N_IMAGES : 3,
-  FORCES : {
-    COLLISION: 1,
-    CHARGE: -1,
-    LINKS: 0.002,
-  },
   VIEW_THRESHOLD: 1.5,
   SPECTRUM: [
     'rgb(222,237,250)',

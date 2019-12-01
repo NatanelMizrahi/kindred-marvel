@@ -4,6 +4,8 @@ import APP_CONFIG from '../../app.config';
 import { Link } from './link';
 import { Node } from './node';
 import * as d3 from 'd3';
+import { FORCES } from '../d3.forces';
+
 
 
 export class ForceDirectedGraph {
@@ -52,14 +54,9 @@ export class ForceDirectedGraph {
     this.simulation.force('links',
       d3.forceLink(this.links)
         .id((d: Node) => d.id)
-        .strength(APP_CONFIG.FORCES.LINKS)
+        // .strength(FORCES.link.strength)
+        .strength((link,_,__) => link.strength / 30)
     );
-  }
-
-  resetSimulation(options) {
-    this.simulation = null;
-    this.initSimulation(options);
-    console.log(this.nodes, this.links);
   }
 
   initSimulation(options) {
@@ -75,11 +72,11 @@ export class ForceDirectedGraph {
       this.simulation = d3.forceSimulation()
         .force('charge',
           d3.forceManyBody()
-            .strength((d: Node) => APP_CONFIG.FORCES.LINKS * d.r)
+            .strength((d: Node) => FORCES.charge.strength * d.r)
         )
         .force('collide',
           d3.forceCollide()
-            .strength(APP_CONFIG.FORCES.COLLISION)
+            .strength(FORCES.collide.strength)
             .radius((d: Node) => d.r + 5).iterations(2)
         );
 
