@@ -15,6 +15,7 @@ export class GraphComponent implements OnInit, AfterViewInit {
   @Input('nodes') nodes: Node[];
   @Input('links') links: Link[];
   graph: ForceDirectedGraph;
+  nodeMap: Map<string, Node>;
   private _options: { width, height } = { width: 800, height: 600 };
 
   @HostListener('window:resize', ['$event']) onResize(event) {
@@ -28,13 +29,19 @@ export class GraphComponent implements OnInit, AfterViewInit {
       this.graph.simulation.stop();
       this.ngOnInit();
     });
+    this.renderService.fixCoords.subscribe(forcedCoords => {
+      const node = this.nodeMap.get(forcedCoords.nodeId);
+      node.fx = forcedCoords.x;
+      node.fy = forcedCoords.y;
+    });
+
   }
   ngOnInit() {
     console.log("resetting simulation");
-
     /** Receiving an initialized simulated graph from our custom d3 service */
+    this.nodeMap = new Map(this.nodes.map(node => [node.id, node]));
     this.graph = this.d3Service.getForceDirectedGraph(this.nodes, this.links, this.options);
-    this.graph.ticker.subscribe((d) => {
+    this.graph.ticker.subscribe(d => {
       this.ref.markForCheck();
     });
   }

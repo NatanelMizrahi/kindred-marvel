@@ -75,6 +75,7 @@ export class AppComponent  implements OnInit {
         connectCharacterNodes(connesctionsSet);
       }
       this.renderService.resetGraph.next(true);
+      this.renderService.fixCoords.next({nodeId:'Avengers', x: 100, y: 50});
     };
 
     this.events$ = this.apiService.getEvents({ limit: 15 })

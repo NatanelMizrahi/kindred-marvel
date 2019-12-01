@@ -5,11 +5,6 @@ import { Link } from './link';
 import { Node } from './node';
 import * as d3 from 'd3';
 
-const FORCES = {
-  LINKS: APP_CONFIG.GRAVITY,
-  COLLISION: 3,
-  CHARGE: -1
-};
 
 export class ForceDirectedGraph {
   public ticker: EventEmitter<d3.Simulation<Node, Link>> = new EventEmitter();
@@ -57,7 +52,7 @@ export class ForceDirectedGraph {
     this.simulation.force('links',
       d3.forceLink(this.links)
         .id((d: Node) => d.id)
-        .strength(FORCES.LINKS)
+        .strength(APP_CONFIG.FORCES.LINKS)
     );
   }
 
@@ -80,11 +75,11 @@ export class ForceDirectedGraph {
       this.simulation = d3.forceSimulation()
         .force('charge',
           d3.forceManyBody()
-            .strength((d: Node) => FORCES.CHARGE * d.r)
+            .strength((d: Node) => APP_CONFIG.FORCES.LINKS * d.r)
         )
         .force('collide',
           d3.forceCollide()
-            .strength(FORCES.COLLISION)
+            .strength(APP_CONFIG.FORCES.COLLISION)
             .radius((d: Node) => d.r + 5).iterations(2)
         );
 
@@ -98,7 +93,7 @@ export class ForceDirectedGraph {
     }
 
     /** Updating the central force of the simulation */
-    this.simulation.force('centers', d3.forceCenter(options.width / 2, options.height / 2));
+    // this.simulation.force('centers', d3.forceCenter(options.width / 2, options.height / 2));
 
     /** Restarting the simulation internal timer */
     this.simulation.restart();

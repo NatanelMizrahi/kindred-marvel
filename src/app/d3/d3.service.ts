@@ -46,6 +46,7 @@ export class D3Service {
         node.fx = d3.event.x;
         node.fy = d3.event.y;
         node.isDragged = true;
+        // graph.simulation.
       }
 
       function ended() {

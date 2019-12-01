@@ -20,13 +20,13 @@ export class Link implements d3.SimulationLinkDatum<Node> {
     return 100 * (this.source.character.linkStrength(this.target.character) / Character.N);
   }
   get opacity() {
-    return Math.sqrt(this.strength) / 30;
+    return Math.sqrt(this.strength) / 100;
   }
   get isDragged() {
     return (this.source.isDragged || this.target.isDragged);
   }
   get color() {
-    const alpha = this.isDragged ? Math.max(0.1, 2 * this.opacity) : this.opacity;
+    const alpha = this.isDragged ? Math.max(0.07, 2 * this.opacity) : this.opacity;
     return this.isDragged ? `rgba(256,80,50,${alpha})` : `rgba(200,200,50,${alpha})`;
 
   }
