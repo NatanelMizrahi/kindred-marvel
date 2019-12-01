@@ -4,7 +4,8 @@ import {Character} from '../../api/character';
 
 // Implementing SimulationNodeDatum interface into our custom Node class
 export class Node implements d3.SimulationNodeDatum {
-  // Optional - defining optional implementation properties - required for relevant typing assistance
+  static dummy: Node = new Node(new Character({id: 'dummy', name: 'dummy'}));
+
   index?: number;
   x?: number;
   y?: number;

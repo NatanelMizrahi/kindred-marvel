@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {ForceDirectedGraph, Link, Node} from './models';
 import * as d3 from 'd3';
+import {Subject} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +10,7 @@ export class D3Service {
   /** This service will provide methods to enable user interaction with elements
    * while maintaining the d3 simulations physics
    */
-  lastDragged: Node;
+  pinnedNode: Node = Node.dummy;
   constructor() {}
 
   /** A method to bind a pan and zoom behaviour to an svg element */
@@ -30,9 +31,12 @@ export class D3Service {
   applyDraggableBehaviour(element, node: Node, graph: ForceDirectedGraph) {
     const d3element = d3.select(element);
 
-    function started() {
-      /** Preventing propagation of dragstart to parent elements */
+    const pinNode = (nodeToPin) => this.pinnedNode = nodeToPin;
+    const releaseNode = () => Object.assign(this.pinnedNode, { fx : null, fy : null});
 
+    function started() {
+      releaseNode();
+      /** Preventing propagation of dragstart to parent elements */
       d3.event.sourceEvent.stopPropagation();
 
       if (!d3.event.active) {
@@ -42,10 +46,6 @@ export class D3Service {
       d3.event.on('drag', dragged).on('end', ended);
 
       function dragged() {
-        if (that.lastDragged) {
-          that.lastDragged.fx = null;
-          that.lastDragged.fy = null;
-        }
         node.fx = d3.event.x;
         node.fy = d3.event.y;
         node.isDragged = true;
@@ -55,11 +55,8 @@ export class D3Service {
         if (!d3.event.active) {
           graph.simulation.alphaTarget(0);
         }
-
-        // node.fx = null;
-        // node.fy = null;
+        pinNode(node);
         node.isDragged = false;
-        this.lastDragged = node;
       }
     }
 

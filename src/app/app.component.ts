@@ -33,7 +33,7 @@ export class AppComponent  implements OnInit {
       const charNode = new Node(char);
       char.node = charNode;
       this.nodes.push(charNode);
-    }
+    };
 
     const connectCharacterNodes = (connectionSet) => {
       for (const ids of connectionSet) {
@@ -42,7 +42,7 @@ export class AppComponent  implements OnInit {
         const char2 = this.charMap.get(id2);
         this.links.push(new Link(char1.node, char2.node));
       }
-    }
+    };
 
     const getCharacterConnections = (events) => {
       for (const event of events) {
@@ -63,7 +63,7 @@ export class AppComponent  implements OnInit {
         }
         // update links
         const connectionPairs = [];
-        for (let char of this.characters) {
+        for (const char of this.characters) {
           connectionPairs.push(...char.lexicalLinks);
         }
         console.log(connectionPairs);
@@ -75,7 +75,6 @@ export class AppComponent  implements OnInit {
         connectCharacterNodes(connesctionsSet);
       }
       this.renderService.resetGraph.next(true);
-      this.renderService.fixCoords.next({nodeId:'Avengers', x: 400, y: 400});
     };
 
     this.events$ = this.apiService.getEvents({ limit: 15 })
