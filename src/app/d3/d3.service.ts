@@ -45,6 +45,7 @@ export class D3Service {
       function dragged() {
         node.fx = d3.event.x;
         node.fy = d3.event.y;
+        node.isDragged = true;
       }
 
       function ended() {
@@ -54,6 +55,7 @@ export class D3Service {
 
         node.fx = null;
         node.fy = null;
+        node.isDragged = false;
       }
     }
 

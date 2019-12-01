@@ -7,7 +7,7 @@ import * as d3 from 'd3';
 
 const FORCES = {
   LINKS: APP_CONFIG.GRAVITY,
-  COLLISION: 1,
+  COLLISION: 3,
   CHARGE: -1
 };
 

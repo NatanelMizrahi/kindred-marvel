@@ -5,15 +5,24 @@
   stroke 0.1s ease-out;
   stroke: white;
   stroke-width: 0.25;
+  position: relative;
+  display: none;
+
+}
+image{
+  display: block;
+  margin: 0 auto;
+  text-align : center;
 }
 .node-name {
   font-family: 'Lato';
   text-anchor: middle;
+  dominant-baseline:central;
   alignment-baseline: central;
   font-weight: 300;
   fill: white;
 }
 
 .tt{
-  border-radius: 50%;
+  background: red;
 }

@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import APP_CONFIG from '../../app.config';
+import {Character} from '../../api/character';
 
 // Implementing SimulationNodeDatum interface into our custom Node class
 export class Node implements d3.SimulationNodeDatum {
@@ -13,29 +14,41 @@ export class Node implements d3.SimulationNodeDatum {
   fy?: number | null;
 
   id: string;
-  data?: any;
-  linkCount: number;
+  image: string;
+  isDragged: boolean;
+  character: Character;
 
-  constructor(id, data: any = null) {
-    this.id = id;
-    this.data = data;
-    this.linkCount = 0;
+  constructor(character: Character) {
+    this.id = character.name;
+    this.character = character;
+    this.image = this.randImage();
+    this.isDragged = false;
+  }
+  get linkCount() {
+    return this.character.linkCount;
   }
 
-  normal = () => {
-    return Math.sqrt(this.linkCount / APP_CONFIG.N);
+  get normal() {
+    // console.log(Character.N);
+    return this.linkCount / Character.N;
   }
 
   get r() {
-    return 50 * this.normal() + 10;
+    return 50 * this.normal + 10;
   }
 
   get fontSize() {
-    return (30 * this.normal() + 10) + 'px';
+    return this.r/3;//(30 * this.normal + 10) + 'px';
   }
 
+
   get color() {
-    const index = Math.floor(APP_CONFIG.SPECTRUM.length * this.normal());
+    const index = Math.floor(APP_CONFIG.SPECTRUM.length * this.normal);
     return APP_CONFIG.SPECTRUM[index];
+  }
+
+  randImage() {
+    const rand = Math.round(Math.random() * (APP_CONFIG.N_IMAGES));
+    return `assets/sprites/${rand}.svg`;
   }
 }

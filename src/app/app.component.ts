@@ -27,39 +27,21 @@ export class AppComponent  implements OnInit {
     this.charMap = new Map();
   }
 
-  init() {
-    const getIndex = n => n - 1;
-    const N = APP_CONFIG.N;
-    /** constructing the nodes array */
-    for (let i = 1; i <= N; i++) {
-      // this.nodes.push(new Node(i));
-      this.nodes.push(new Node(`test${i}`)); //
-    }
-
-    for (let i = 1; i <= N; i++) {
-      for (let m = 2; i * m <= N; m++) {
-        /** increasing connections toll on connecting nodes */
-        this.nodes[getIndex(i)].linkCount++;
-        this.nodes[getIndex(i * m)].linkCount++;
-
-        /** connecting the nodes before starting the simulation */
-        this.links.push(new Link(`test${i}`, `test${i * m}`));
-      }
-    }
-  }
-
   ngOnInit(): void {
     const addCharacterNode = charId => {
       const char = this.charMap.get(charId);
-      const charNode = new Node(char.name, char);
+      const charNode = new Node(char);
       char.node = charNode;
       this.nodes.push(charNode);
     }
 
-    const connectCharacterNodes = (id1, id2, context) => {
-      const char1 = this.charMap.get(id1);
-      const char2 = this.charMap.get(id2);
-      this.links.push(new Link(char1.node, char2.node, context));
+    const connectCharacterNodes = (connectionSet) => {
+      for (const ids of connectionSet) {
+        const [id1, id2] = [...ids];
+        const char1 = this.charMap.get(id1);
+        const char2 = this.charMap.get(id2);
+        this.links.push(new Link(char1.node, char2.node));
+      }
     }
 
     const getCharacterConnections = (events) => {
@@ -79,25 +61,31 @@ export class AppComponent  implements OnInit {
         for (const char of event.characters) {
           this.charMap.get(char.id).addConnections(eventCharacterIds, event);
         }
-        let allPairs= [];
-        for (let char of this.charMap.values()) {
-          allPairs.push(...char.connections.map(id => char.id < id ? `${char.id}_${id}` : `${id}_${char.id}`));
+        // update links
+        const connectionPairs = [];
+        for (let char of this.characters) {
+          connectionPairs.push(...char.lexicalLinks);
         }
-        let set = new Set(allPairs);
-        console.log(set);
-        allPairs.forEach(pair => {
-          const ids = pair.split('_');
-          connectCharacterNodes(ids[0], ids[1], null);
-        });
-        this.renderService.resetGraph.next(true);
+        console.log(connectionPairs);
+        const connectionPairsStrings = connectionPairs.map(x => JSON.stringify(x));
+        console.log(connectionPairsStrings);
+        const connesctionsSet = [...new Set(connectionPairsStrings)].map(x => JSON.parse(x));
+        console.log(connesctionsSet);
+        const connectionsMap = new Map(connesctionsSet);
+        connectCharacterNodes(connesctionsSet);
       }
+      this.renderService.resetGraph.next(true);
     };
 
-    this.events$ = this.apiService.getEvents({ limit: 1 })
+    this.events$ = this.apiService.getEvents({ limit: 15 })
       .subscribe(getCharacterConnections);
   }
 
   private getCharacters() {
     this.apiService.getCharacters(Array.from(this.charMap.keys()));
+  }
+
+  get characters() {
+    return [...this.charMap.values()];
   }
 }
