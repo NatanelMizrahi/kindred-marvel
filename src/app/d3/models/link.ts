@@ -11,9 +11,11 @@ export class Link implements d3.SimulationLinkDatum<Node> {
   source: Node;
   target: Node;
 
-  constructor(source, target, context = null) {
+  constructor(source, target) {
     this.source = source;
     this.target = target;
+    this.source.links.push(this);
+    this.target.links.push(this);
   }
 
   get strength() {
@@ -26,7 +28,7 @@ export class Link implements d3.SimulationLinkDatum<Node> {
     return (this.source.isDragged || this.target.isDragged);
   }
   get color() {
-    const alpha = this.isDragged ? Math.max(0.07, 2 * this.opacity) : this.opacity;
+    const alpha = this.isDragged ? Math.max(0.3, 2 * this.opacity) : this.opacity;
     return this.isDragged ? `rgba(256,80,50,${alpha})` : `rgba(200,200,50,${alpha})`;
 
   }

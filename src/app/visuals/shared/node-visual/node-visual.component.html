@@ -1,16 +1,16 @@
-<svg:g [attr.transform]="'translate(' + (node.x-node.r).toString() + ',' + (node.y- node.r).toString() + ')'">
-<!--  <svg:circle-->
-<!--    class="node"-->
-<!--    cx="0"-->
-<!--    cy="0"-->
+<!--<svg:g [attr.transform]="'translate(' + (node.x-node.r).toString() + ',' + (node.y- node.r).toString() + ')'">-->
+<svg:g [attr.transform]="posString">
+<!--  <svg:circle *ngIf="node.highlight"-->
+<!--    [attr.r]="node.r"-->
+<!--    [attr.cx]="node.r"-->
+<!--    [attr.cy]="node.r"-->
 <!--    [attr.fill]="node.color"-->
-<!--    [attr.r]="node.r">-->
-<!--  </svg:circle>-->x
+<!--    [attr.opacity]="0.5">-->
+<!--  </svg:circle>-->
   <svg:image class="node"
-             [attr.background]="'black'"
-             [attr.xlink:href]="node.image"
-             [attr.height]="2*node.r"
-             [attr.width]="2*node.r">
+   [attr.xlink:href]="node.image"
+   [attr.height]="2*node.r"
+   [attr.width]= "2*node.r">
   </svg:image>
   <svg:text
     class="node-name"

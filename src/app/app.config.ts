@@ -1,6 +1,6 @@
 const APP_CONFIG = {
   N_IMAGES : 3,
-  VIEW_THRESHOLD: 1.5,
+  VIEW_THRESHOLD: 0.5,
   SPECTRUM: [
     'rgb(222,237,250)',
     'rgb(176,212,243)',

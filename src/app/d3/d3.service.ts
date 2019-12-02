@@ -91,13 +91,13 @@ export class D3Service {
       .on("mouseout", d => tip.hide(d));
 
     //////////
-    var vis = d3.select(document.body)
-      .append('svg')
-      .attr('width', w)
-      .attr('height', h)
-      .append('g')
-      .attr('transform', 'translate(20, 20)')
-      .call(tip)
+    // var vis = d3.select(document.body)
+    //   .append('svg')
+    //   .attr('width', w)
+    //   .attr('height', h)
+    //   .append('g')
+    //   .attr('transform', 'translate(20, 20)')
+    //   .call(tip)
   }
 
   getForceDirectedGraph(nodes: Node[], links: Link[], options: { width, height} ) {

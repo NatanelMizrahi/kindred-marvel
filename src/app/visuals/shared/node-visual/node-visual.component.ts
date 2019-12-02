@@ -7,4 +7,7 @@ import { Node } from '../../../d3/models/node';
 })
 export class NodeVisualComponent {
   @Input('nodeVisual') node: Node;
+  get posString() {
+    return `translate(${(this.node.x - this.node.r)},${(this.node.y - this.node.r)})`;
+  }
 }
