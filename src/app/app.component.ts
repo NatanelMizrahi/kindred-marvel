@@ -77,7 +77,7 @@ export class AppComponent  implements OnInit {
       this.renderService.resetGraph.next(true);
     };
 
-    this.events$ = this.apiService.getEvents({ limit: 15 })
+    this.events$ = this.apiService.getEvents({ limit: 12 })
       .subscribe(getCharacterConnections);
   }
 

@@ -5,7 +5,7 @@ export const FORCES = {
   },
   charge: {
     enabled: true,
-    strength: -60,
+    strength: -30,
     distanceMin: 1,
     distanceMax: 2000
   },

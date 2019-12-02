@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {ForceDirectedGraph, Link, Node} from './models';
 import * as d3 from 'd3';
-import {Subject} from 'rxjs';
+import d3Tip from 'd3-tip';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +25,16 @@ export class D3Service {
 
     const zoom = d3.zoom().on('zoom', zoomed);
     svg.call(zoom);
+    // const tip = d3Tip()
+    //   .attr("class", "d3-tip")
+    //   .html(d => d.toFixed(2))
+    //   .direction('nw')
+    //   .offset([0, 3])
+    // ;
+    //
+    // // .html(d => `<strong>Frequency:</strong> <span style="color:red"> ${d}</span>`);
+    // svg.call(tip);
+
   }
 
   /** A method to bind a draggable behaviour to an svg element */
@@ -62,11 +72,32 @@ export class D3Service {
 
     d3element.call(d3.drag()
       .on('start', started));
-
+  /////
     d3element.on('contextmenu', (d, i) => {
       d3.event.preventDefault();
       console.log('right click!');
     });
+    const tip = d3Tip()
+      .attr("class", "d3-tip")
+      .html(d => d.toFixed(2))
+      .direction('nw')
+      .offset([0, 3])
+    ;
+
+      // .html(d => `<strong>Frequency:</strong> <span style="color:red"> ${d}</span>`);
+    d3element.call(tip);
+    d3element
+      .on("mouseover", d => tip.show(d))
+      .on("mouseout", d => tip.hide(d));
+
+    //////////
+    var vis = d3.select(document.body)
+      .append('svg')
+      .attr('width', w)
+      .attr('height', h)
+      .append('g')
+      .attr('transform', 'translate(20, 20)')
+      .call(tip)
   }
 
   getForceDirectedGraph(nodes: Node[], links: Link[], options: { width, height} ) {
