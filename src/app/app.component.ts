@@ -14,10 +14,10 @@ import {RenderService} from './shared/render.service';
 
 })
 export class AppComponent  implements OnInit {
+  eventLimit = 12;
   title = 'kindred-marvel';
   nodes: Node[] = [];
   links: Link[] = [];
-  events$: Subscription;
   events: Map<number, any>;
   charMap: Map<string, Character>;
   constructor(private apiService: ApiService,
@@ -34,7 +34,6 @@ export class AppComponent  implements OnInit {
       char.node = charNode;
       this.nodes.push(charNode);
     };
-
     const connectCharacterNodes = (connectionSet) => {
       for (const ids of connectionSet) {
         const [id1, id2] = [...ids];
@@ -43,9 +42,20 @@ export class AppComponent  implements OnInit {
         this.links.push(new Link(char1.node, char2.node));
       }
     };
+    // const getEventCharactersData = events => {
+    //   events.forEach(event => {
+    //     this.apiService.getEventCharacters(event.id, event.numCharacters)
+    //       .subscribe(eventCharacters => {
+    //         for (let character of eventCharacters) {
+    //           if (sdf)
+    //         }
+    //       });
+    //   })
+    // };
 
     const getCharacterConnections = (events) => {
       for (const event of events) {
+        console.log(event.id);
         // save events by eventID
         this.events.set(event.id, event);
         // save new characters
@@ -66,19 +76,20 @@ export class AppComponent  implements OnInit {
         for (const char of this.characters) {
           connectionPairs.push(...char.lexicalLinks);
         }
-        console.log(connectionPairs);
         const connectionPairsStrings = connectionPairs.map(x => JSON.stringify(x));
-        console.log(connectionPairsStrings);
         const connesctionsSet = [...new Set(connectionPairsStrings)].map(x => JSON.parse(x));
-        console.log(connesctionsSet);
-        const connectionsMap = new Map(connesctionsSet);
         connectCharacterNodes(connesctionsSet);
       }
       this.renderService.resetGraph.next(true);
     };
 
-    this.events$ = this.apiService.getEvents({ limit: 12 })
-      .subscribe(getCharacterConnections);
+    const events$ = this.apiService.getEvents(this.eventLimit);
+    events$.subscribe(events => {
+      getCharacterConnections(events);
+      // getEventCharactersData(events);
+    });
+    // this.apiService.getAllCharacters(304)
+    //   .subscribe(getCharacterConnections);
   }
 
   private getCharacters() {
@@ -87,5 +98,8 @@ export class AppComponent  implements OnInit {
 
   get characters() {
     return [...this.charMap.values()];
+  }
+  private getAllCharacters(limit= 200) {
+    this.apiService.getCharacters(Array.from(this.charMap.keys()));
   }
 }

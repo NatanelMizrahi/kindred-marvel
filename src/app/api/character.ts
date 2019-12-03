@@ -1,13 +1,45 @@
 import { Node } from '../d3/models';
-export class Character {
 
-  constructor(props: { id, name }) {
-    this.id = props.id;
-    this.name = props.name;
-    this.connections = new Map();
-    this.thumbnailURL = `http://gateway.marvel.com/v1/public/characters/${props.id}`;
+interface APICharacter {
+  id: string;
+  name: string;
+  description?: string;
+  thumbnail?: {
+    path: string,
+    extension: string
+  };
+  events?: {
+    items: Array<{
+      resourceURI: string,
+      name: string
+    }>;
+  };
+}
+
+export class Character {
+  static N = 0;
+
+  id: string;
+  name: string;
+  description?: string;
+  node?: Node;
+  thumbnailURL: string;
+  connections: Map<string, Set<string>>;
+  eventIds: string[];
+
+  constructor(apiCharacter: APICharacter) {
+    console.log(apiCharacter);
     Character.N = Character.N + 1;
+    Object.assign(this, apiCharacter);
+    this.id = apiCharacter.id;
+    this.description = apiCharacter.description;
+    this.connections = new Map();
+    if (apiCharacter.thumbnail) {
+      this.thumbnailURL = `${apiCharacter.thumbnail.path}/standard_large.${apiCharacter.thumbnail.extension}`;
+    }
+
   }
+
   get lexicalLinks() {
     return this.connected.map(id => this.id < id ? [this.id, id] : [id, this.id]);
   }
@@ -18,13 +50,6 @@ export class Character {
   get linkCount() {
     return this.connections.size;
   }
-
-  static N = 0;
-  id: string;
-  name: string;
-  node?: Node;
-  thumbnailURL: string;
-  connections: Map<string, Set<string>>;
 
   addConnection = (characterId, eventId) => {
     if (!this.connections.has(characterId)) {

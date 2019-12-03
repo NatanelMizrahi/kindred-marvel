@@ -37,7 +37,6 @@ export class Node implements d3.SimulationNodeDatum {
   }
 
   get normal() {
-    // console.log(Character.N);
     return this.linkCount / Character.N;
   }
 

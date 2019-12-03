@@ -1,6 +1,9 @@
 export class Filter {
-  // Optional - defining optional implementation properties - required for relevant typing assistance
   limit?: number;
+  events?: string;
+  offset?: string;
 
-  constructor() {}
+  constructor(data= {}) {
+    Object.assign(this, data);
+  }
 }
