@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import {Filter} from './filter';
 import { Character} from './character';
+import {flatten} from '@angular/compiler';
 
 interface APIResponse<T> {
   data: { results: T[] };
@@ -97,13 +98,13 @@ export class ApiService {
   }
 
   getEventCharacters(eventId: string, total: number) {
-    const getEventCharactersChunk = chunkFilter => this.http
-      .get<APIResponse<Character>>(this.apiUrl(`events/${eventId}/characters`, chunkFilter))
-      .pipe(map(characterResponse => characterResponse.data.results.map(char => new Character(char)))
-    );
+    const getEventCharactersChunk = chunkFilter => this.apiGet(`events/${eventId}/characters`, chunkFilter)
     const characterRequestFilters = this.chunkApiFilters(total, this.MAX_CHARACTERS);
-    return forkJoin(characterRequestFilters.map(getEventCharactersChunk));
-    // .subscribe(console.log);
+    return forkJoin(characterRequestFilters.map(getEventCharactersChunk))
+      .pipe(
+        map(flatten),
+        map(eventCharacters => ({id: eventId, characters: eventCharacters}))
+      );
 }
   private apiGet(route, filter: Filter = {}) {
     return this.http.get<APIResponse<any>>(this.apiUrl(route, filter)).pipe(

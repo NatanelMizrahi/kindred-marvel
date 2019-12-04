@@ -26,6 +26,7 @@ export class Node implements d3.SimulationNodeDatum {
     this.image = this.randImage();
     this.isDragged = false;
     this.links = [];
+    character.node = this;
   }
 
   get highlight() {

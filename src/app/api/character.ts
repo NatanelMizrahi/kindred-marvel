@@ -28,10 +28,9 @@ export class Character {
   eventIds: string[];
 
   constructor(apiCharacter: APICharacter) {
-    console.log(apiCharacter);
     Character.N = Character.N + 1;
-    Object.assign(this, apiCharacter);
     this.id = apiCharacter.id;
+    this.name = apiCharacter.name;
     this.description = apiCharacter.description;
     this.connections = new Map();
     if (apiCharacter.thumbnail) {
