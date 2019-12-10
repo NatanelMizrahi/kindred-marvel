@@ -17,7 +17,7 @@ interface Pair {
 
 })
 export class AppComponent  implements OnInit {
-  eventLimit = 12;
+  eventLimit = 15;
   title = 'kindred-marvel';
   nodes: Node[] = [];
   links: Link[] = [];
