@@ -12,6 +12,9 @@ export class RenderService {
     this.resetGraph = new Subject();
     this.fixCoords = new Subject();
   }
+  refreshView() {
+    this.resetGraph.next(true);
+  }
 
   pinNode(id: string, x: number, y: number) {
     this.fixCoords.next({ nodeId: id, x, y });

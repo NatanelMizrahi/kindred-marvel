@@ -33,6 +33,22 @@ export class AppComponent  implements OnInit {
   }
 
   ngOnInit(): void {
+    // TODO: finish: after initial graph is rendered, add all the characters for each event. see events$.subscribe...
+    // const getEventCharactersData = events => events.forEach(event =>
+    //     this.apiService.getEventCharacters(event.id, event.numCharacters)
+    //       // .subscribe(addAndLinkEventCharacters));
+    //       .subscribe(ADD_EVENT_CHAR_TEST));
+    //
+    // const ADD_EVENT_CHAR_TEST = event => {
+    //   console.log(this.charMap)
+    //   for (const char of event.characters) {
+    //     if (!this.charMap.has(char.id)) {
+    //       console.log(new Character(char));
+    //     }
+    //   }
+    // };
+    ////////////////////////////////
+
     const addCharacterNode = (char: Character) => {
       this.nodes.push(new Node(char));
       this.charMap.set(char.id, char);
@@ -49,92 +65,65 @@ export class AppComponent  implements OnInit {
         }
       }
     };
-    //TODO:
-    // const getEventCharactersData = events => {
-    //   events.forEach(event => {
-    //     this.apiService.getEventCharacters(event.id, event.numCharacters)
-    //       .subscribe(eventCharacters => {
-    //         for (const character of eventCharacters) {
-    //           if (!this.charMap.has(character.id)) {
-    //
-    //           }
-    //
-    //         }
-    //       });
-    //   })
-    // };
+
     const addEventCharacters = event => {
       for (const char of event.characters) {
         if (!this.charMap.has(char.id)) {
-          this.charMap.set(char.id, new Character(char));
-          addCharacterNode(char);
+          addCharacterNode(new Character(char));
         }
       }
     };
     const linkEventCharacters = event => {
       const eventCharacterIds = event.characters.map(character => character.id);
-      for (const char of event.characters) {
-        this.charMap.get(char.id).addConnections(eventCharacterIds, event);
+      for (const charId of eventCharacterIds) {
+        this.charMap.get(charId).addConnections(eventCharacterIds, event);
       }
     };
-    const refreshGraph = () => this.renderService.resetGraph.next(true);
+    const refreshGraph = () => this.renderService.refreshView();
     const registerEvent = event => this.events.set(event.id, event);
-    const saveEvents = events => events.forEach(event => saveEventData(event));
-    const saveEventData = (events: any[]) => {
+    const saveEventData = event => {
       registerEvent(event);
       addEventCharacters(event);
       linkEventCharacters(event);
+      updateCharacterLinks();
     };
+    const addAndLinkEventCharacters = (event) => {
+      addEventCharacters(event);
+      linkEventCharacters(event);
+    };
+    const saveEvents = events => events.forEach(saveEventData);
     const getCharactersConnections = () => {
       const connectionPairs = [];
       for (const char of this.characters) {
         connectionPairs.push(...char.lexicalLinks);
       }
-      const connectionPairsStrings = connectionPairs.map(x => JSON.stringify(x));
-      const connectionsSet = [...new Set(connectionPairsStrings)].map(x => JSON.parse(x));
+      const pairToString = pair => JSON.stringify(pair)
+      const stringToPair = str => JSON.parse(str)
+      const connectionPairsStrings = connectionPairs.map(pairToString);
+      const connectionsSet = [...new Set(connectionPairsStrings)].map(stringToPair);
       return connectionsSet;
     }
     const updateCharacterLinks = () => connectCharacterNodes(getCharactersConnections());
     const getCharacterConnections = (events) => {
-      for (const event of events) {
-        // save events by eventID
-        this.events.set(event.id, event);
-        // save new characters
-        const eventCharacterIds = [];
+      saveEvents(events);
+      refreshGraph();
+    }
+    this.apiService.getEvents(this.eventLimit).subscribe(events => {
+      getCharacterConnections(events);
+      const getEventCharactersData = eventss => eventss.forEach(event =>
+        this.apiService.getEventCharacters(event.id, event.numCharacters)
+          // .subscribe(addAndLinkEventCharacters));
+          .subscribe(ADD_EVENT_CHAR_TEST));
+
+      const ADD_EVENT_CHAR_TEST = event => {
+        console.log(this.charMap)
         for (const char of event.characters) {
-          eventCharacterIds.push(char.id);
           if (!this.charMap.has(char.id)) {
-            addCharacterNode(new Character(char));
+            console.log(new Character(char));
           }
         }
-        // update the characters connected to this event
-        for (const char of event.characters) {
-          this.charMap.get(char.id).addConnections(eventCharacterIds, event);
-        }
-        // update links
-        const connectionPairs = [];
-        for (const char of this.characters) {
-          connectionPairs.push(...char.lexicalLinks);
-        }
-        const connectionPairsStrings = connectionPairs.map(x => JSON.stringify(x));
-        const connectionsSet = [...new Set(connectionPairsStrings)].map(x => JSON.parse(x));
-        connectCharacterNodes(connectionsSet);
-      }
-      this.renderService.resetGraph.next(true);
-    };
-    const test = () => {
-      this.apiService.getEventCharacters('318', 144)
-        .subscribe(console.log);
-    };
-    const events$ = this.apiService.getEvents(this.eventLimit);
-    events$.subscribe(events => {
-      getCharacterConnections(events);
-      // getEventCharactersData(events);
-      test();
-
+      };
     });
-    // this.apiService.getAllCharacters(304)
-    //   .subscribe(getCharacterConnections);
   }
 
   private getCharacters() {

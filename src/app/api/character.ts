@@ -29,7 +29,7 @@ export class Character {
 
   constructor(apiCharacter: APICharacter) {
     Character.N = Character.N + 1;
-    this.id = apiCharacter.id;
+    this.id = apiCharacter.id.toString();
     this.name = apiCharacter.name;
     this.description = apiCharacter.description;
     this.connections = new Map();
