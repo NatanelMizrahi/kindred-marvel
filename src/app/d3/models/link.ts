@@ -1,13 +1,11 @@
-import { Node } from './index';
 import APP_CONFIG from '../../app.config';
-import {Character} from '../../api/character';
+import { Node } from './index';
 
 // Implementing SimulationLinkDatum interface into our custom Link class
 export class Link implements d3.SimulationLinkDatum<Node> {
-  // Optional - defining optional implementation properties - required for relevant typing assistance
+  static STRENGTH_FACTOR = (APP_CONFIG.LINK_WIDTH_FACTOR / (APP_CONFIG.MAX_VISIBLE_CHARS * Math.sqrt(APP_CONFIG.EVENT_LIMIT)));
   index?: number;
 
-  // Must - defining enforced implementation properties
   source: Node;
   target: Node;
 
@@ -19,7 +17,7 @@ export class Link implements d3.SimulationLinkDatum<Node> {
   }
 
   get strength() {
-    return 100 * (this.source.character.linkStrength(this.target.character) / Character.N);
+    return  Link.STRENGTH_FACTOR * this.source.character.linkStrength(this.target.character) ;
   }
   get opacity() {
     return Math.sqrt(this.strength) / 100;
@@ -28,9 +26,7 @@ export class Link implements d3.SimulationLinkDatum<Node> {
     return (this.source.isDragged || this.target.isDragged);
   }
   get color() {
-    const alpha = this.isDragged ? Math.max(0.3, 2 * this.opacity) : this.opacity;
-    return this.isDragged ? `rgba(256,80,50,${alpha})` : `rgba(200,200,50,${alpha})`;
-
+    return `rgba(200,200,50,${this.opacity})`;
   }
   get isVisible() {
     return this.strength > APP_CONFIG.VIEW_THRESHOLD || this.isDragged;

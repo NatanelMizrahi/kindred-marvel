@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { Node, Link } from './d3/models';
 import { ApiService } from './api/api.service';
-import APP_CONFIG from './app.config';
-import {forkJoin, Observable, Subject, Subscription} from 'rxjs';
 import {Character} from './api/character';
 import {RenderService} from './shared/render.service';
+import APP_CONFIG from './app.config';
 interface Pair {
   id1: any;
   id2: any;
 }
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -16,14 +16,17 @@ interface Pair {
   providers: [ApiService]
 
 })
+
 export class AppComponent  implements OnInit {
-  eventLimit = 15;
+  eventLimit = APP_CONFIG.EVENT_LIMIT;
   title = 'kindred-marvel';
   nodes: Node[] = [];
   links: Link[] = [];
   linkMap: Map<Pair, Link>;
   events: Map<number, any>;
   charMap: Map<string, Character>;
+  charimgs = [];
+
   constructor(private apiService: ApiService,
               private renderService: RenderService) {
 
@@ -48,7 +51,6 @@ export class AppComponent  implements OnInit {
     //   }
     // };
     ////////////////////////////////
-
     const addCharacterNode = (char: Character) => {
       this.nodes.push(new Node(char));
       this.charMap.set(char.id, char);
@@ -75,22 +77,25 @@ export class AppComponent  implements OnInit {
     };
     const linkEventCharacters = event => {
       const eventCharacterIds = event.characters.map(character => character.id);
+      // console.log(eventCharacterIds);
+      // console.log(event);
+
       for (const charId of eventCharacterIds) {
         this.charMap.get(charId).addConnections(eventCharacterIds, event);
       }
     };
     const refreshGraph = () => this.renderService.refreshView();
     const registerEvent = event => this.events.set(event.id, event);
-    const saveEventData = event => {
-      registerEvent(event);
+    const addAndLinkEventCharacters = event => {
       addEventCharacters(event);
       linkEventCharacters(event);
       updateCharacterLinks();
     };
-    const addAndLinkEventCharacters = (event) => {
-      addEventCharacters(event);
-      linkEventCharacters(event);
+    const saveEventData = event => {
+      registerEvent(event);
+      addAndLinkEventCharacters(event);
     };
+
     const saveEvents = events => events.forEach(saveEventData);
     const getCharactersConnections = () => {
       const connectionPairs = [];
@@ -104,25 +109,35 @@ export class AppComponent  implements OnInit {
       return connectionsSet;
     }
     const updateCharacterLinks = () => connectCharacterNodes(getCharactersConnections());
+    const updateCharactersData = newCharactersData => newCharactersData
+      .forEach(charData => this.charMap.get(charData.id).update(charData));
+    const updateEventData = eventData => {
+      console.log('updating:', eventData.id);
+      addAndLinkEventCharacters(eventData);
+      updateCharactersData(eventData.characters);
+    }
     const getCharacterConnections = (events) => {
       saveEvents(events);
       refreshGraph();
     }
+    const getEventCharactersData = events => events
+      .forEach(event =>
+        this.apiService.getEventCharacters(event.id, event.numCharacters)
+          .subscribe(updateEventData));
+
+
+    // const getAllEventCharactersData = events => Promise.all(events
+    //   .map(event => this.apiService.getEventCharacters(event.id, event.numCharacters)
+    //     .toPromise()
+    //     .then(updateEventData)))
+    //   .then(x => console.log('all done!'))
+    const getAllEventCharactersData = events => this.apiService.getAllEventsCharacters(events, updateEventData)
+      .subscribe(x => console.log('all done!', x));
+    // start of events request
     this.apiService.getEvents(this.eventLimit).subscribe(events => {
       getCharacterConnections(events);
-      const getEventCharactersData = eventss => eventss.forEach(event =>
-        this.apiService.getEventCharacters(event.id, event.numCharacters)
-          // .subscribe(addAndLinkEventCharacters));
-          .subscribe(ADD_EVENT_CHAR_TEST));
-
-      const ADD_EVENT_CHAR_TEST = event => {
-        console.log(this.charMap)
-        for (const char of event.characters) {
-          if (!this.charMap.has(char.id)) {
-            console.log(new Character(char));
-          }
-        }
-      };
+      getEventCharactersData(events);
+      // getAllEventCharactersData(events);
     });
   }
 

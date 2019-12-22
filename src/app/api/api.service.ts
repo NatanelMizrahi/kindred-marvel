@@ -1,14 +1,22 @@
+import APP_CONFIG from '../app.config';
+// import { eventsDB } from '../../assets/test-db/events-db';
+// import { charactersDB } from '../../assets/test-db/superhero-db';
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {Md5} from 'ts-md5/dist/md5';
-import { map } from 'rxjs/operators';
-import { forkJoin } from 'rxjs';
+import {catchError, map} from 'rxjs/operators';
+import {forkJoin, throwError} from 'rxjs';
 import {Filter} from './filter';
 import { Character} from './character';
 import {flatten} from '@angular/compiler';
 
 interface APIResponse<T> {
   data: { results: T[] };
+}
+interface EventCharacters {
+  id: string;
+  characters: any[];
 }
 
 @Injectable({
@@ -35,7 +43,7 @@ export class ApiService {
   }
 
   getAllCharacters(total: number) {
-    const getCharacterChunk = chuckFilter => this.apiGet('characters', chuckFilter)
+    const getCharacterChunk = chunkFilter => this.apiGet('characters', chunkFilter)
       .pipe(map(characters => characters.map(char => new Character(char)))
     );
 
@@ -43,30 +51,35 @@ export class ApiService {
     console.log(characterRequests);
     return forkJoin(characterRequests.map(getCharacterChunk));
   }
+
+  getCharWiki(characterName) {
+    return this.http.get(`/wiki/${characterName}`);
+  }
+
   getEvents(limit) {
     const filter = new Filter({ limit });
-    const extractEventsData = events => events.map(event =>
-      ({
-        id: event.id.toString(),
+    const extractEventData = event => ({
+        id: String(event.id),
         title: event.title,
         description: event.description,
         thumbnailURL: `${event.thumbnail.path}.${event.thumbnail.extension}`,
         characters: event.characters.items.map(this.getCharAttributes),
         numCharacters: event.characters.available
-      }));
+      });
+    const extractAllEventsData = events => events.map(extractEventData);
+    if (APP_CONFIG.USE_CACHE) {
+      return this.http.get<APIResponse<any>>('/events')
+        .pipe(map(events => extractAllEventsData(events.data.results.slice(0, limit))));
+    }
     return this.apiGet('events', filter)
-      .pipe(map(extractEventsData));
+      .pipe(map(extractAllEventsData));
   }
-  private handleError(error: any) {
-    const errMsg = (error.message) ? error.message :
-      error.status ? `${error.status} - ${error.statusText}` : 'Server error';
-    console.error(errMsg); // log to console instead
-  }
+
   private getHash(timestamp: string) {
     return new Md5().appendStr(`${timestamp}${this.PRIVATE_KEY}${this.PUBLIC_KEY}`).end();
   }
   get now() {
-    return new Date().getTime().toString();
+    return String(new Date().getTime());
   }
   get suffix() {
     const timestamp = this.now;
@@ -77,11 +90,6 @@ export class ApiService {
   }
   private apiUrl(route, filter: Filter = {}) {
     return `${this.baseURL}${route}?${this.jsonToQuery(filter)}${this.suffix}`;
-  }
-
-  private chunk(arr, size) {
-    return arr.reduce((arrays, _, i) =>
-      (i % size === 0) ? [...arrays, arr.slice(i, i + size)] : arrays, []);
   }
 
   private chunkApiFilters(total, limit) {
@@ -97,34 +105,46 @@ export class ApiService {
     return requestsfilters;
   }
 
+  getAllEventsCharacters(events, callback) {
+    return forkJoin(events.map(event => this.getEventCharacters(event.id, event.numCharacters)
+      .pipe(map(callback))));
+  }
   getEventCharacters(eventId: string, total: number) {
+    // if (APP_CONFIG.USE_CACHE) {
+    //   return this.http.get(`/events/${eventId}`)
+    //     .pipe(map((event: EventCharacters) => {
+    //       console.log('for:', eventId, event);
+    //       event.characters.forEach(char => char.id = String(char.id));
+    //       return event;
+    //     }));
+    // }
+    const saveEventToDB = event => {
+      if ([231, 314, 229, 293, 234, 320].includes(+event.id)) {
+        this.http.post(`/events/${eventId}`, event)
+          .subscribe(console.log);
+      }
+      return event;
+    };
     const getEventCharactersChunk = chunkFilter => this.apiGet(`events/${eventId}/characters`, chunkFilter)
     const characterRequestFilters = this.chunkApiFilters(total, this.MAX_CHARACTERS);
     return forkJoin(characterRequestFilters.map(getEventCharactersChunk))
       .pipe(
         map(flatten),
-        map(eventCharacters => ({id: eventId, characters: eventCharacters}))
+        map(eventCharacters => ({id: String(eventId), characters: eventCharacters})),
+        map(saveEventToDB)
       );
-}
+  }
   private apiGet(route, filter: Filter = {}) {
-    return this.http.get<APIResponse<any>>(this.apiUrl(route, filter)).pipe(
-      map(res => res.data.results)
-    );
+    return this.http.get<APIResponse<any>>(this.apiUrl(route, filter))
+      .pipe(map(res => res.data.results));
+  }
+
+  private errorHandler() {
+    return catchError(error => {
+      const errMsg = (error.message) ? error.message : error.status ? `${error.status} - ${error.statusText}` : 'Server error';
+      console.error(errMsg);
+      return throwError(error);
+    });
   }
 }
 
-// getEventCharacters(eventIds: string[]) {
-//   const getEventCharactersChunk = (eventIdsChunk: string[]) => {
-//     const eventIdsQuery = new Filter();
-//     eventIdsQuery.events = eventIdsChunk.join('%2c');
-//     return this.http.get(this.apiUrl('characters', eventIdsQuery));
-//   };
-//
-//   // limited to 10 events in every API call
-//   const eventIdChunks = this.chunk(eventIds, 10);
-//   forkJoin(eventIdChunks.map(getEventCharactersChunk))
-//   //   .pipe(
-//   //   map(eventCharResponses => eventCharResponses.map(response => response.data.results))
-//   // )
-//     .subscribe(console.log);
-// }

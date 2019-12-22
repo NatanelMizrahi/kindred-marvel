@@ -36,7 +36,12 @@ export class Character {
     if (apiCharacter.thumbnail) {
       this.thumbnailURL = `${apiCharacter.thumbnail.path}/standard_large.${apiCharacter.thumbnail.extension}`;
     }
-
+  }
+  update(apiCharacter: APICharacter) {
+    this.description = apiCharacter.description;
+    if (apiCharacter.thumbnail) {
+      this.thumbnailURL = `${apiCharacter.thumbnail.path}/standard_large.${apiCharacter.thumbnail.extension}`;
+    }
   }
 
   get lexicalLinks() {

@@ -1,3 +1,5 @@
+import APP_CONFIG from '../app.config';
+
 export const FORCES = {
   center: {
     x: 0.5,
@@ -5,7 +7,7 @@ export const FORCES = {
   },
   charge: {
     enabled: true,
-    strength: -30,
+    strength: -30 * Math.log2(APP_CONFIG.MAX_VISIBLE_CHARS),
     distanceMin: 1,
     distanceMax: 2000
   },
