@@ -14,6 +14,7 @@ interface APICharacter {
       name: string
     }>;
   };
+  groups?: Set<string>;
 }
 
 export class Character {

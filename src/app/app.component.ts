@@ -25,14 +25,19 @@ export class AppComponent  implements OnInit {
   linkMap: Map<Pair, Link>;
   events: Map<number, any>;
   charMap: Map<string, Character>;
+  filteredCharMap: Map<string, Character>;
   charimgs = [];
+  names: string[] = [];
 
-  constructor(private apiService: ApiService,
-              private renderService: RenderService) {
-
+  constructor(
+    private apiService: ApiService,
+    private renderService: RenderService,
+    private heroApiService: HeroApiService
+  ) {
     this.events = new Map();
     this.charMap = new Map();
     this.linkMap = new Map();
+    this.filteredCharMap = new Map();
   }
 
   ngOnInit(): void {
@@ -60,10 +65,10 @@ export class AppComponent  implements OnInit {
         const [id1, id2] = [...ids];
         const char1 = this.charMap.get(id1);
         const char2 = this.charMap.get(id2);
-        if (!this.linkMap.has({id1, id2})) {
+        if (!this.linkMap.has({ id1, id2 })) {
           const link = new Link(char1.node, char2.node);
           this.links.push(link);
-          this.linkMap.set({id1, id2}, link);
+          this.linkMap.set({ id1, id2 }, link);
         }
       }
     };
@@ -139,7 +144,57 @@ export class AppComponent  implements OnInit {
       getEventCharactersData(events);
       // getAllEventCharactersData(events);
     });
+
+    this.setHeroesGroups();
   }
+
+  private setHeroesGroups = () => {
+    const characters = this.charMap.values();
+    for (let char of characters) {
+      this.heroApiService.addGroups(char);
+    }
+  };
+
+  private searchCharacterSuggest = (filterText: string) => {
+    this.filteredCharMap = new Map();
+    const allCharacters = this.characters;
+    filterText = filterText.toLowerCase();
+    for (let char of allCharacters) {
+      if (char.name.toLowerCase().indexOf(filterText.toLowerCase()) != -1) {
+        this.filteredCharMap.set(char.name, char);
+      }
+    }
+    this.names = Array.from(this.filteredCharMap.keys());
+  };
+
+  private getCharFromName = (name: string): Character => {
+    return this.filteredCharMap.get(name);
+  };
+
+  private getTopConnections(connections: Map<string, Set<string>>) {
+    const sortedConnections = Array.from(connections).sort(
+      (entryA, entryB) => entryA[1].size - entryB[1].size
+    );
+    return sortedConnections.slice(0, this.nodeLimit - 1).map(x => x[0]);
+  }
+
+  private searchCharacterButton = (name: string) => {
+    let char = this.getCharFromName(name);
+    let topConnections = this.getTopConnections(char.connections);
+    topConnections.push(char.id);
+    let filterNodes = this.nodes.filter(node =>
+      topConnections.includes(node.character.id)
+    );
+
+    const activeNodesSet = new Set(filterNodes);
+    let activeLinks = flatten(filterNodes.map(node => node.links)).filter(
+      (link: Link) =>
+        activeNodesSet.has(link.source) && activeNodesSet.has(link.target)
+    );
+    this.nodes = filterNodes;
+    this.links = activeLinks;
+    this.renderService.refreshView();
+  };
 
   private getCharacters() {
     this.apiService.getCharacters(Array.from(this.charMap.keys()));

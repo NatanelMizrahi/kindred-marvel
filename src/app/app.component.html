@@ -1,5 +1,30 @@
 <div class="logo-wrapper">
-  <img class="logo" src="assets/logo.png">
+  <img class="logo" src="assets/logo.png" />
+  <div class="input-group mt-3 col-4">
+    <input
+      list="characters"
+      [(ngModel)]="character"
+      type="text"
+      class="form-control"
+      placeholder="Choose character by name"
+      (keyup)="searchCharacterSuggest($event.target.value)"
+    />
+    <datalist id="characters">
+      <p>little shit</p>
+      <div *ngFor="let char of names">
+        <option>{{ char }}</option>
+      </div>
+    </datalist>
+    <div class="input-group-append">
+      <button
+        type="button"
+        class="btn btn-outline-warning"
+        (click)="searchCharacterButton(character)"
+      >
+        Search
+      </button>
+    </div>
+  </div>
 </div>
 <graph [nodes]="nodes" [links]="links"></graph>
 <div class="footer">
