@@ -7,10 +7,16 @@
   stroke-width: 0.25;
   position: relative;
 }
-image{
+image, img{
   display: block;
   margin: 0 auto;
   text-align : center;
+  clip-path: circle(50%);
+  -webkit-clip-path: circle(50%);
+}
+.clip-circle {
+  clip-path: circle(20px at center);
+  -webkit-clip-path: circle(50%);
 }
 .aura {
   opacity: 0.1;

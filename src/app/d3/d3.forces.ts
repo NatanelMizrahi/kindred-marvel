@@ -7,7 +7,7 @@ export const FORCES = {
   },
   charge: {
     enabled: true,
-    strength: -30 * Math.log2(APP_CONFIG.MAX_VISIBLE_CHARS),
+    strength: -500 * Math.log2(APP_CONFIG.MAX_VISIBLE_CHARS),
     distanceMin: 1,
     distanceMax: 2000
   },

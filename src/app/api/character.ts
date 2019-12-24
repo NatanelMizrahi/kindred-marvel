@@ -1,4 +1,5 @@
 import { Node } from '../d3/models';
+import APP_CONFIG from '../app.config';
 
 interface APICharacter {
   id: string;
@@ -23,10 +24,9 @@ export class Character {
   id: string;
   name: string;
   description?: string;
-  node?: Node;
   thumbnailURL: string;
   connections: Map<string, Set<string>>;
-  eventIds: string[];
+  node?: Node;
 
   constructor(apiCharacter: APICharacter) {
     Character.N = Character.N + 1;
@@ -34,14 +34,15 @@ export class Character {
     this.name = apiCharacter.name;
     this.description = apiCharacter.description;
     this.connections = new Map();
-    if (apiCharacter.thumbnail) {
-      this.thumbnailURL = `${apiCharacter.thumbnail.path}/standard_large.${apiCharacter.thumbnail.extension}`;
-    }
+    this.thumbnailURL = apiCharacter.thumbnail ?
+      `${apiCharacter.thumbnail.path}/standard_xlarge.${apiCharacter.thumbnail.extension}` :
+      this.randImage() ;
   }
+
   update(apiCharacter: APICharacter) {
     this.description = apiCharacter.description;
     if (apiCharacter.thumbnail) {
-      this.thumbnailURL = `${apiCharacter.thumbnail.path}/standard_large.${apiCharacter.thumbnail.extension}`;
+      this.thumbnailURL = `${apiCharacter.thumbnail.path}/standard_xlarge.${apiCharacter.thumbnail.extension}`;
     }
   }
 
@@ -74,6 +75,10 @@ export class Character {
         this.addConnection(id, eventId);
       }
     }
+  }
+  randImage() {
+    const rand = Math.floor(Math.random() * (APP_CONFIG.N_IMAGES));
+    return `assets/sprites/${rand}.svg`;
   }
 }
 

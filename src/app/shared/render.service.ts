@@ -13,6 +13,7 @@ export class RenderService {
     this.fixCoords = new Subject();
   }
   refreshView() {
+    console.log('refreshing graph');
     this.resetGraph.next(true);
   }
 

@@ -23,7 +23,6 @@ export class Node implements d3.SimulationNodeDatum {
   constructor(character: Character) {
     this.id = character.name;
     this.character = character;
-    this.image = this.randImage();
     this.isDragged = false;
     this.links = [];
     character.node = this;
@@ -42,7 +41,7 @@ export class Node implements d3.SimulationNodeDatum {
   }
 
   get r() {
-    return 50 * this.normal + 10;
+    return 20 * this.normal + 10;
   }
 
   get fontSize() {
@@ -52,9 +51,5 @@ export class Node implements d3.SimulationNodeDatum {
   get color() {
     const index = Math.floor(APP_CONFIG.SPECTRUM.length * this.normal);
     return APP_CONFIG.SPECTRUM[index];
-  }
-  randImage() {
-    const rand = Math.floor(Math.random() * (APP_CONFIG.N_IMAGES));
-    return `assets/sprites/${rand}.svg`;
   }
 }
