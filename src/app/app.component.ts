@@ -174,18 +174,8 @@ export class AppComponent  implements OnInit {
     const char = this.getCharFromName(name);
     const topConnections = this.getTopConnections(char.connections);
     topConnections.push(char.id);
-    const filterNodes = this.nodes.filter(node =>
-      topConnections.includes(node.character.id)
-    );
-
-    const activeNodesSet = new Set(filterNodes);
-    const activeLinks = flatten(filterNodes.map(node => node.links)).filter(
-      (link: Link) =>
-        activeNodesSet.has(link.source) && activeNodesSet.has(link.target)
-    );
-    this.activeNodes = filterNodes;
-    this.activeLinks = activeLinks;
-    this.renderService.refreshView();
+    this.activeNodes = topConnections.map(charId => this.charMap.get(charId).node);
+    this.updateActiveLinks();
   }
 
   private getCharacters() {
@@ -206,6 +196,10 @@ export class AppComponent  implements OnInit {
     this.activeNodes = this.nodes
       .sort(nodeSizeComparator)
       .slice(0, APP_CONFIG.MAX_VISIBLE_CHARS);
+    this.updateActiveLinks();
+  }
+
+  private updateActiveLinks() {
     const activeNodesSet = new Set(this.activeNodes);
     this.activeLinks = flatten(this.activeNodes.map(node => node.links
       .filter(link =>
