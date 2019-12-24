@@ -1,17 +1,16 @@
-<div class="logo-wrapper">
+<div class="header">
   <img class="logo" src="assets/logo.png" />
   <div class="input-group mt-3 col-4">
     <input
-      list="characters"
-      [(ngModel)]="character"
-      type="text"
+      [(ngModel)]="characterQuery"
       class="form-control"
-      placeholder="Choose character by name"
+      list="characters"
+      type="text"
+      placeholder="Choose a character by name"
       (keyup)="searchCharacterSuggest($event.target.value)"
     />
     <datalist id="characters">
-      <p>little shit</p>
-      <div *ngFor="let char of names">
+      <div *ngFor="let char of filteredCharacterNames">
         <option>{{ char }}</option>
       </div>
     </datalist>
@@ -19,14 +18,18 @@
       <button
         type="button"
         class="btn btn-outline-warning"
-        (click)="searchCharacterButton(character)"
+        (click)="searchCharacterButton(characterQuery)"
+
       >
         Search
       </button>
     </div>
   </div>
 </div>
-<graph [nodes]="nodes" [links]="links"></graph>
+
+<!--<graph [nodes]="nodes" [links]="links"></graph>-->
+<graph [nodes]="activeNodes" [links]="activeLinks"></graph>
+
 <div class="footer">
   <a target="_blank" href="http://marvel.com">Data provided by Marvel. © 2019 MARVEL</a>
 </div>

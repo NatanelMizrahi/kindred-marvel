@@ -63,7 +63,6 @@ export class GraphComponent implements OnInit, AfterViewInit {
       .sort((a, b) => b.character.linkCount - a.character.linkCount)
       .slice(0, APP_CONFIG.MAX_VISIBLE_CHARS);
     this.charImages = this.activeNodes.map(node => node.character.thumbnailURL);
-    console.log(this.charImages);
   }
   getActiveLinks() {
     const activeNodesSet = new Set(this.activeNodes);

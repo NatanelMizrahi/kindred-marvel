@@ -1,8 +1,11 @@
 import { Node } from '../d3/models';
 import APP_CONFIG from '../app.config';
 
+type CharacterId = string;
+type EventId = string;
+
 interface APICharacter {
-  id: string;
+  id: CharacterId;
   name: string;
   description?: string;
   thumbnail?: {
@@ -21,16 +24,16 @@ interface APICharacter {
 export class Character {
   static N = 0;
 
-  id: string;
+  id: CharacterId;
   name: string;
   description?: string;
   thumbnailURL: string;
-  connections: Map<string, Set<string>>;
+  connections: Map<CharacterId, Set<EventId>>;
   node?: Node;
 
   constructor(apiCharacter: APICharacter) {
     Character.N = Character.N + 1;
-    this.id = apiCharacter.id.toString();
+    this.id = String(apiCharacter.id);
     this.name = apiCharacter.name;
     this.description = apiCharacter.description;
     this.connections = new Map();

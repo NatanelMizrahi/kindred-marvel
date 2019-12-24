@@ -10,6 +10,8 @@ interface Pair {
   id1: any;
   id2: any;
 }
+type CharName = string;
+
 
 @Component({
   selector: 'app-root',
@@ -24,11 +26,16 @@ export class AppComponent  implements OnInit {
   title = 'kindred-marvel';
   nodes: Node[] = [];
   links: Link[] = [];
+  activeNodes: Node[] = [];
+  activeLinks: Link[] = [];
+
   linkMap: Map<Pair, Link>;
   events: Map<number, any>;
   charMap: Map<string, Character>;
-  filteredCharMap: Map<string, Character>;
-  names: string[] = [];
+  filteredCharMap: Map<CharName, Character>;
+  filteredCharacterNames: CharName[] = [];
+  characterQuery: any;
+
 
   constructor(
     private apiService: MarvelApiService,
@@ -116,14 +123,15 @@ export class AppComponent  implements OnInit {
 
     const getAllEventCharactersData = events => this.apiService.getAllEventsCharacters(events, updateEventData)
       .subscribe(x => console.log('all done!', x));
-    // start of events request
+
+    const renderGraph = () => this.chooseNClique();
+    /** start of events request **/
     this.apiService.getEvents(this.eventLimit).subscribe(events => {
       getCharacterConnections(events);
+      renderGraph();
       Promise.all(getEventCharactersData(events))
-        .then(refreshGraph);
-      // getAllEventCharactersData(events);
+        .then(renderGraph);
     });
-
     this.setHeroesGroups();
   }
 
@@ -139,11 +147,11 @@ export class AppComponent  implements OnInit {
     const allCharacters = this.characters;
     filterText = filterText.toLowerCase();
     for (const char of allCharacters) {
-      if (char.name.toLowerCase().indexOf(filterText.toLowerCase()) !== -1) {
+      if (char.name.toLowerCase().includes(filterText)) {
         this.filteredCharMap.set(char.name, char);
       }
     }
-    this.names = Array.from(this.filteredCharMap.keys());
+    this.filteredCharacterNames = [...this.filteredCharMap.keys()];
   }
 
   private getCharFromName = (name: string): Character => {
@@ -151,12 +159,18 @@ export class AppComponent  implements OnInit {
   }
 
   private getTopConnections(connections: Map<string, Set<string>>) {
-    const connectionsComparator = (connA, connB) => connA[1].size - connB[1].size
-    const sortedConnections = Array.from(connections).sort(connectionsComparator);
-    return sortedConnections.slice(0, APP_CONFIG.MAX_VISIBLE_CHARS - 1).map(x => x[0]);
+    const connectionsComparator = (connA, connB) => connB[1].size - connA[1].size;
+    const getCharacterId = connectionPair => connectionPair[0];
+    const sortedConnections = Array
+      .from(connections)
+      .sort(connectionsComparator);
+    return sortedConnections
+      .slice(0, APP_CONFIG.MAX_VISIBLE_CHARS - 1)
+      .map(getCharacterId);
   }
 
   private searchCharacterButton = (name: string) => {
+    console.log('searchCharacterSuggest');
     const char = this.getCharFromName(name);
     const topConnections = this.getTopConnections(char.connections);
     topConnections.push(char.id);
@@ -169,8 +183,8 @@ export class AppComponent  implements OnInit {
       (link: Link) =>
         activeNodesSet.has(link.source) && activeNodesSet.has(link.target)
     );
-    this.nodes = filterNodes;
-    this.links = activeLinks;
+    this.activeNodes = filterNodes;
+    this.activeLinks = activeLinks;
     this.renderService.refreshView();
   }
 
@@ -183,5 +197,21 @@ export class AppComponent  implements OnInit {
   }
   private getAllCharacters(limit= 200) {
     this.apiService.getCharacters(Array.from(this.charMap.keys()));
+  }
+  private clear() {
+    this.filteredCharacterNames = [];
+  }
+  private chooseNClique() {
+    const nodeSizeComparator = (nodeA, nodeB) => nodeB.linkCount - nodeA.linkCount;
+    this.activeNodes = this.nodes
+      .sort(nodeSizeComparator)
+      .slice(0, APP_CONFIG.MAX_VISIBLE_CHARS);
+    const activeNodesSet = new Set(this.activeNodes);
+    this.activeLinks = flatten(this.activeNodes.map(node => node.links
+      .filter(link =>
+        activeNodesSet.has(link.source) &&
+        activeNodesSet.has(link.target))
+    ));
+    this.renderService.refreshView();
   }
 }
