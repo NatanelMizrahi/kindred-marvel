@@ -221,3 +221,65 @@
 //     .catch(err => console.log(err) || res.status(503).json(err))
 // }
 // // events/${eventId}/characters
+
+
+
+
+// // wiki
+// async function getWikiCategoryEnries(category) {
+//   let wikiApiCatergoryQuery = `https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:${category}&cmlimit=max&format=json&exintro`
+//   let categoryMembers = [];
+//   let hasContinuation = true;
+//   let wikiApiCatergoryEntriesResponse = null;
+//   let categoryBatchQuery = wikiApiCatergoryQuery;
+//   while (hasContinuation) {
+//     wikiApiCatergoryEntriesResponse = await rp(categoryBatchQuery)
+//       .then(JSON.parse)
+//       .catch(console.error);
+//     hasContinuation = wikiApiCatergoryEntriesResponse.hasOwnProperty('continue');
+//     categoryBatchQuery = wikiApiCatergoryQuery + '&' + getContinuationQuery(wikiApiCatergoryEntriesResponse);
+//     categoryMembers = categoryMembers.concat(wikiApiCatergoryEntriesResponse.query.categorymembers)
+//   }
+//   return categoryMembers;
+// }
+//
+// function extractWikiAttributes(powers) {
+//   let powersString = "";
+//   if (!powers){
+//     return [];
+//   }
+//   if(Array.isArray(powers)){
+//     for (let el of powers) {
+//       if (el.type === "link") {
+//         powersString += el.text;
+//       } else if (el.type === "text") {
+//         powersString += el.value;
+//       }
+//     }
+//   }
+//   else if (powers.hasOwnProperty('value')){
+//     powersString = powers.value;
+//   }
+//   else if (powers.hasOwnProperty('text')){
+//     powersString = powers.text;
+//   }
+//   const clearWikiField = el => el
+//     .replace('}}','')
+//     .replace(/<ref>.*<\/ref>/,'')
+//     .replace('<ref name','')
+//     .trim()
+//   let powersArray = powersString.split(/\*|<br\s?\/?>/).filter(x => x !== '');
+//   powersArray = powersArray.map(clearWikiField);
+//   return powersArray;
+// };
+
+// wikiInfobox(wikiTitle.replace(' ','_'), "en", (err, data) => {
+//   if (err) {
+//     console.log('No wikiInfobox found for ' + wikiTitle);
+//     return charData;
+//   }
+//   charData.alliances =  extractWikiAttributes(data.alliances);
+//   charData.powers =     extractWikiAttributes(data.powers);
+//   console.log(charData);
+//   return charData;
+// });

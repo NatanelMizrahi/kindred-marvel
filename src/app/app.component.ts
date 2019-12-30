@@ -107,19 +107,19 @@ export class AppComponent  implements OnInit {
     const updateCharactersData = newCharactersData => newCharactersData
       .forEach(charData => this.charMap.get(charData.id).update(charData));
     const updateEventData = eventData => {
-      console.log('updating:', eventData.id);
+      // console.log('updating:', eventData.id);
       addAndLinkEventCharacters(eventData);
       updateCharactersData(eventData.characters);
     };
     const getCharacterConnections = (events) => {
       saveEvents(events);
-      refreshGraph();
+      // refreshGraph();
     };
     const getEventCharactersData = events => events
       .map(event =>
         this.apiService.getEventCharacters(event.id, event.numCharacters)
-          .toPromise().then(updateEventData))
-          // .subscribe(updateEventData).add());
+          .toPromise()
+          .then(updateEventData))
 
     const getAllEventCharactersData = events => this.apiService.getAllEventsCharacters(events, updateEventData)
       .subscribe(x => console.log('all done!', x));
@@ -192,6 +192,7 @@ export class AppComponent  implements OnInit {
     this.filteredCharacterNames = [];
   }
   private chooseNClique() {
+    console.log('rendering graph');
     const nodeSizeComparator = (nodeA, nodeB) => nodeB.linkCount - nodeA.linkCount;
     this.activeNodes = this.nodes
       .sort(nodeSizeComparator)

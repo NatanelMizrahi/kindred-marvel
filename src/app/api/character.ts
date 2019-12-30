@@ -4,7 +4,7 @@ import APP_CONFIG from '../app.config';
 type CharacterId = string;
 type EventId = string;
 
-interface APICharacter {
+export interface APICharacter {
   id: CharacterId;
   name: string;
   description?: string;

@@ -2,6 +2,8 @@ import {Injectable} from '@angular/core';
 import {ForceDirectedGraph, Link, Node} from './models';
 import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
+import { D3TooltipComponent } from './models/d3-tooltip/d3-tooltip.component';
+// import {D3TooltipService} from 'ngx-d3-tooltip';
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +13,11 @@ export class D3Service {
    * while maintaining the d3 simulations physics
    */
   pinnedNode: Node = Node.dummy;
-  constructor() {}
+  constructor(
+    // private tipService: D3TooltipService
+  ) {}
 
+  bindTooltipBehaviour(svgElement, containerElement) {}
   /** A method to bind a pan and zoom behaviour to an svg element */
   applyZoomableBehaviour(svgElement, containerElement) {
     const svg = d3.select(svgElement);
@@ -79,7 +84,7 @@ export class D3Service {
     });
     const tip = d3Tip()
       .attr("class", "d3-tip")
-      .html(d => d.toFixed(2))
+      .html(d => `<strong>Frequency:</strong> <span style="color:red">${d}</span>`)
       .direction('nw')
       .offset([0, 3])
     ;
@@ -88,16 +93,8 @@ export class D3Service {
     d3element.call(tip);
     d3element
       .on("mouseover", d => tip.show(d))
+      .on("mouseover", d => console.log(d))
       .on("mouseout", d => tip.hide(d));
-
-    //////////
-    // var vis = d3.select(document.body)
-    //   .append('svg')
-    //   .attr('width', w)
-    //   .attr('height', h)
-    //   .append('g')
-    //   .attr('transform', 'translate(20, 20)')
-    //   .call(tip)
   }
 
   getForceDirectedGraph(nodes: Node[], links: Link[], options: { width, height} ) {

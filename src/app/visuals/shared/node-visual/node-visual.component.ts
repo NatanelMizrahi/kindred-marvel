@@ -10,5 +10,4 @@ export class NodeVisualComponent {
   get posString() {
     return `translate(${(this.node.x - this.node.r)},${(this.node.y - this.node.r)})`;
   }
-
 }
