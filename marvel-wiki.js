@@ -1,4 +1,6 @@
 const rp = require("request-promise");
+const WIKI_API_RETRY_DELAY = 3000;
+const TOO_MANY_REQUESTS_ERR_CODE = 429;
 function p(x){console.log(x); return x;}
 
 function extractInfoboxText(wikiPageRaw){
@@ -63,15 +65,31 @@ function extractCharacterAttributes(wikiInfoboxData) {
   return extractCharFields(wikiInfoboxData);
 }
 
+function toSnakeCase(str) {
+  return str.replace(/ /g,'_');
+}
+function manualRedirectToInfoboxPage(wikiTitle, wikiJsonResponse){
+  if (wikiJsonResponse.parse.hasOwnProperty('wikitext')){
+    return {
+      title: wikiTitle,
+      body:wikiJsonResponse.parse.wikitext['*']
+    };
+  }
+  else if (wikiJsonResponse.parse.hasOwnProperty('text')){
+    wikiTitle = wikiJsonResponse.parse.title
+    return parseWikiInfobox(wikiTitle);
+  }
+  else
+    throw new TypeError('Unexpected JSON response from wiki API');
+}
+
 function parseWikiInfobox(wikiPageTitle){
   const getAttributes = text => text.split('|');
-  const snakeCaseTitle = wikiPageTitle
-    .replace(/ /g,'_')
-    .replace(/#.*/,'');
-  const wikiTextRawApiCall = `https://en.wikipedia.org/w/api.php?action=parse&format=json&page=${snakeCaseTitle}&prop=wikitext&redirects`;
+  const wikiTitle = toSnakeCase(wikiPageTitle)
+  const wikiTextRawApiCall = `https://en.wikipedia.org/w/api.php?action=parse&format=json&page=${wikiTitle}&prop=wikitext&redirects`;
   return rp(wikiTextRawApiCall)
     .then(JSON.parse)
-    .then(wikiJsonResponse => ({title:snakeCaseTitle, body:wikiJsonResponse.parse.wikitext['*']}))
+    .then(wikiJsonResponse => manualRedirectToInfoboxPage(wikiTitle, wikiJsonResponse))
     .then(extractInfoboxText)
     .then(extractInfoboxLinksText)
     .then(cleanWikiText)
@@ -79,7 +97,8 @@ function parseWikiInfobox(wikiPageTitle){
     .then(infoboxTextToJson)
     .then(parseInfoboxListAttributes)
     .then(extractCharacterAttributes)
-    .catch(e => console.error(wikiPageTitle, e))
+    // .catch(e => console.error(wikiPageTitle, e)) //TODO: statusCode == 429 : too many requests, set timeout
+    .catch(handleWikiAPIError)
 }
 
 async function parseAnyWikiPageInfobox(wikiTitlesArray){
@@ -94,12 +113,15 @@ async function parseAnyWikiPageInfobox(wikiTitlesArray){
   return null;
 }
 
+
 function extractCharacterNamesFromWikiList(pageWikiText) {
-  const characterMatches = pageWikiText.matchAll(/\{Main\|(.*?)\}/gi);
-  return [...characterMatches].map(x => x[1]);
+  const extractcharacterAliases = match => match[2].indexOf(match[1]) === -1 ? [match[1], match[2]]: [match[2]];
+  const characterMatches = pageWikiText.matchAll(/==([\w\s\-\.]+)==\s*\{\{\s*Main\|(.*?)\}/gi);
+  const namesMatches = [...characterMatches].map(extractcharacterAliases);
+  return namesMatches;
 }
 
-function getWikiMarvelCharacterNames() {
+function getMarvelCharactersWikiPages() {
   const charIndexArray = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     .split('')
     .concat(encodeURIComponent('0–9'));
@@ -107,14 +129,67 @@ function getWikiMarvelCharacterNames() {
   const perIndexCharacterListPromises = charIndexArray
     .map(c => charListWikiApiQuery.replace('$$$', c))
     .map(perCharListApiQuery => rp(perCharListApiQuery)
+      .then(JSON.parse)
+      .then(response => response.parse.wikitext['*'])
       .then(extractCharacterNamesFromWikiList)
+      .then(perCharacterResults => perCharacterResults.flat())
       .catch(console.error))
   return Promise.all(perIndexCharacterListPromises)
-    .then(perIndexCharacters => perIndexCharacters.flat());
+    .then(perIndexCharacters => perIndexCharacters.flat())
+    ;
 }
 
 exports.parseWikiInfobox = parseWikiInfobox;
 exports.parseAnyWikiPageInfobox = parseAnyWikiPageInfobox;
-exports.getWikiMarvelCharacterNames = getWikiMarvelCharacterNames;
+exports.getMarvelCharactersWikiPages = getMarvelCharactersWikiPages;
+exports.testWikiDB = getMarvelCharactersWikiData;
 
+/////////////////////////
+function getRedirectingPages(wikiPageTitle){
+  const wikiTitle = toSnakeCase(wikiPageTitle);
+  const redirectsQuery = `https://en.wikipedia.org/w/api.php?action=query&blfilterredir=redirects&bllimit=max&bltitle=${wikiTitle}&format=json&list=backlinks`;
+  return rp(redirectsQuery)
+    .then(JSON.parse)
+    .then(response => response.query.backlinks.map(link => link.title))
+}
 
+function extractCharacterNamesFromWikiList2(pageWikiText) {
+  const characterMatches = pageWikiText.matchAll(/\{\{\s*Main\|(.*?)\}/gi);
+  return [...characterMatches].map(x => x[1]);
+}
+function getMarvelCharactersWikiPages2() {
+  const charIndexArray = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    .split('')
+    .concat(encodeURIComponent('0–9'));
+  const charListWikiApiQuery =  "https://en.wikipedia.org/w/api.php?action=parse&format=json&page=List_of_Marvel_Comics_characters:_$$$&prop=wikitext";
+  const perIndexCharacterListPromises = charIndexArray
+    .map(c => charListWikiApiQuery.replace('$$$', c))
+    .map(perCharListApiQuery => rp(perCharListApiQuery)
+      .then(JSON.parse)
+      .then(response => response.parse.wikitext['*'])
+      .then(extractCharacterNamesFromWikiList2)
+      .catch(console.error))
+  return Promise.all(perIndexCharacterListPromises)
+    .then(perIndexCharacters => perIndexCharacters.flat())
+    ;
+}
+function getMarvelCharactersWikiData(req,res){
+  getMarvelCharactersWikiPages2()
+    .then(characterWikiPageTitles => Promise.all(characterWikiPageTitles.map(parseWikiInfobox)))
+    .then(p);
+}
+
+function delay(t){
+  return new Promise(resolve => setTimeout(resolve, t));
+}
+function randDelay(){
+  return Math.floor(Math.random() * WIKI_API_RETRY_DELAY);
+}
+function handleWikiAPIError(wikiPageTitle, err){
+  if (err.statusCode === TOO_MANY_REQUESTS_ERR_CODE){
+    let retryDelay = randDelay();
+    console.log(`Error: Too many requests, retrying in ${retryDelay} ms`);
+    return delay(retryDelay).then(x => parseWikiInobox(wikiPageTitle));
+  }
+  console.log(err);
+}
