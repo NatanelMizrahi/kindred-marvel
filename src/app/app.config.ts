@@ -1,11 +1,12 @@
 const APP_CONFIG = {
   USE_CACHE: true,
-  EVENT_LIMIT: 15,
-  LINK_WIDTH_FACTOR: 30,
+  EVENT_LIMIT: 75,
+  LINK_WIDTH_FACTOR: 5,
   MAX_VISIBLE_CHARS: 25,
   N_IMAGES : 3,
-  VIEW_THRESHOLD: 0.3,
-  VIEW_LINKS: false,
+  VIEW_THRESHOLD: 0.5,
+  BASE_OPACITY: 3,
+  VIEW_LINKS: true,
   SPECTRUM: [
     'rgb(222,237,250)',
     'rgb(176,212,243)',
@@ -15,7 +16,8 @@ const APP_CONFIG = {
     'rgb(0,116,217)',
     'rgb(0,106,197)',
     'rgb(0,94,176)'
-  ],
+  ]
+
 
 };
 

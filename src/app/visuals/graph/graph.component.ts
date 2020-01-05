@@ -21,7 +21,6 @@ export class GraphComponent implements OnInit, AfterViewInit {
   activeLinks: Link[];
   graph: ForceDirectedGraph;
   nodeMap: Map<string, Node>;
-  charImages: string[];
 
   @HostListener('window:resize', ['$event']) onResize(event) {
     this.graph.initSimulation(this.options);
@@ -62,7 +61,6 @@ export class GraphComponent implements OnInit, AfterViewInit {
     this.activeNodes = this.nodes
       .sort((a, b) => b.character.linkCount - a.character.linkCount)
       .slice(0, APP_CONFIG.MAX_VISIBLE_CHARS);
-    this.charImages = this.activeNodes.map(node => node.character.thumbnailURL);
   }
   getActiveLinks() {
     const activeNodesSet = new Set(this.activeNodes);

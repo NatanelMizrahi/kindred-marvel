@@ -14,11 +14,11 @@ app.use(express.static(distDir));
 app.use(jsonParser);
 
 // Marvel API
-app.get("/events",                marvelAPI.getAllEventsData);
-app.get("/events/:id",            marvelAPI.getEventData);
-app.get("/events/:id/characters", marvelAPI.getEventCharacters);
-app.get("/events/characters",     getAllEventCharactersData);
-// app.get("/events/characters",     marvelAPI.expressGetAllEventsCharacters);
+app.get("/events",                  marvelAPI.getAllEventsData);
+app.get("/events/:id/characters",   marvelAPI.getEventCharacters);
+app.get("/events/characters/",      marvelAPI.expressGetAllEventsCharacters);
+app.get("/events/:id",              marvelAPI.getEventData);
+app.get("/events/characters/wiki",  getAllEventCharactersData);
 
 // Marvel & Wiki API Cache // TODO: change to PUT requests
 app.get("/cache/marvel",  marvelAPI.refreshMarvelAPICache);

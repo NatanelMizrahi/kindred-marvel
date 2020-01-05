@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {ForceDirectedGraph, Link, Node} from './models';
 import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
-import { D3TooltipComponent } from './models/d3-tooltip/d3-tooltip.component';
+import { D3TooltipComponent } from '../../../bkps/d3-tooltip/d3-tooltip.component';
 // import {D3TooltipService} from 'ngx-d3-tooltip';
 
 @Injectable({

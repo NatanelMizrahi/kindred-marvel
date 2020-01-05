@@ -1,9 +1,9 @@
-import APP_CONFIG from '../app.config';
+import APP_CONFIG from '../src/app/app.config';
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
-import { Character, APICharacter } from './character';
+import { Character, APICharacter } from '../src/app/api/character';
 
 interface HeroAPIResponse<T> {
   data: { results: T[] };

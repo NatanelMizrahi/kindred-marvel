@@ -65,7 +65,7 @@ function getAllEventsCharacters(){
     .catch(console.error)
 }
 function expressGetAllEventsCharacters(req,res){
-  return getAllEventsCharacters()
+  return eventCharactersCollection.find({}).toArray()
     .then(eventCharacters => res.status(201).json(eventCharacters))
     .catch(err => res.status(503).json(err)).catch(console.error);
 }

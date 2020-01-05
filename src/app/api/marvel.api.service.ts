@@ -1,4 +1,3 @@
-import APP_CONFIG from '../app.config';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {catchError, map} from 'rxjs/operators';
@@ -42,20 +41,19 @@ export class MarvelApiService {
     const extractAllEventsData = events =>
       events.map(extractEventData);
 
-    return this.http.get<Array<any>>('/events/')
-        .pipe(map(events =>
-          extractAllEventsData(events.slice(0, limit))));
+    return this.http.get<Array<any>>('/events/').toPromise()
+      .then(events => extractAllEventsData(events.slice(0, limit)));
   }
 
-  getAllEventsCharacters(events, callback) {
-    return this.http.get('/events/characters')
-      .toPromise()
-      .then(callback);
+  getAllEventsCharacters() {
+    return this.http.get<Array<any>>('/events/characters/').toPromise();
   }
-  getEventCharacters(eventId: string, total: number) {
+  getEventCharacters(eventId: string) {
     return this.http.get(`events/${eventId}/characters`);
   }
-
+  getEventsCharactersWiki() {
+    return this.http.get<Array<any>>('/events/characters/wiki').toPromise();
+  }
   // TODO: deprecate
   // API call signature aux fuctions
   private errorHandler() {

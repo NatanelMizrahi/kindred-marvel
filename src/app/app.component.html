@@ -27,7 +27,11 @@
   </div>
 </div>
 
-<!--<graph [nodes]="nodes" [links]="links"></graph>-->
+<div *ngIf="!loaded" class="center">
+  <div class="loader-text">Loading...</div>
+  <div class="loader">Loading...</div>
+</div>
+
 <graph [nodes]="activeNodes" [links]="activeLinks"></graph>
 
 <div class="footer">

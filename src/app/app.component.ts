@@ -5,10 +5,8 @@ import {Character} from './api/character';
 import {RenderService} from './shared/render.service';
 import APP_CONFIG from './app.config';
 import {flatten} from '@angular/compiler';
-interface Pair {
-  id1: any;
-  id2: any;
-}
+
+type IdPair = string;
 type CharName = string;
 type CharacterId = number;
 type EventId = number;
@@ -29,13 +27,15 @@ export class AppComponent  implements OnInit {
   activeNodes: Node[] = [];
   activeLinks: Link[] = [];
 
-  linkMap: Map<Pair, Link>;
-  events: Map<EventId, any>; // Event
   charMap: Map<CharacterId, Character>;
+  linkMap: Map<IdPair, Link>;
+  events: Map<EventId, any>; // Event
 
   filteredCharMap: Map<CharName, Character>;
   filteredCharacterNames: CharName[] = [];
   characterQuery: any;
+  private loaded: boolean;
+
 
 
   constructor(
@@ -46,22 +46,24 @@ export class AppComponent  implements OnInit {
     this.charMap = new Map();
     this.linkMap = new Map();
     this.filteredCharMap = new Map();
+    this.loaded = false;
   }
 
   ngOnInit(): void {
+    const disableLoadAnimation = () => this.loaded = true;
     const addCharacterNode = (char: Character) => {
       this.nodes.push(new Node(char));
       this.charMap.set(char.id, char);
     };
     const connectCharacterNodes = (connectionSet) => {
-      for (const ids of connectionSet) {
-        const [id1, id2] = [...ids];
-        const char1 = this.charMap.get(id1);
-        const char2 = this.charMap.get(id2);
-        if (!this.linkMap.has({ id1, id2 })) {
+      for (const pairId of connectionSet) {
+        const [id1, id2] = pairId.split('_');
+        const char1 = this.charMap.get(+id1);
+        const char2 = this.charMap.get(+id2);
+        if (!this.linkMap.has(pairId)) {
           const link = new Link(char1.node, char2.node);
           this.links.push(link);
-          this.linkMap.set({ id1, id2 }, link);
+          this.linkMap.set(pairId, link);
         }
       }
     };
@@ -77,70 +79,52 @@ export class AppComponent  implements OnInit {
       const eventCharacterIds = event.characters.map(character => character.id);
       eventCharacterIds.forEach(charId =>
         this.charMap.get(charId)
-          .addConnections(eventCharacterIds, event));
+          .addConnections(eventCharacterIds, event.id));
     };
     const refreshGraph = () => this.renderService.refreshView();
     const registerEvent = event => this.events.set(event.id, event);
-    const addAndLinkEventCharacters = event => {
-      addEventCharacters(event);
-      linkEventCharacters(event);
-      updateCharacterLinks();
-    };
     const saveEventData = event => {
       registerEvent(event);
-      addAndLinkEventCharacters(event);
+      addEventCharacters(event);
+      linkEventCharacters(event);
     };
 
     const saveEvents = events => events.forEach(saveEventData);
     const getCharactersConnections = () => {
-      const connectionPairs = [];
-      for (const char of this.characters) {
-        connectionPairs.push(...char.lexicalLinks);
-      }
-      const pairToString = pair => JSON.stringify(pair);
-      const stringToPair = str => JSON.parse(str);
-      const connectionPairsStrings = connectionPairs.map(pairToString);
-      const connectionsSet = [...new Set(connectionPairsStrings)].map(stringToPair);
-      return connectionsSet;
+      let connectionPairs = [];
+      this.characters.forEach(char => connectionPairs.push(...char.lexicalStringLinks));
+      connectionPairs = [...new Set(connectionPairs)];
+      console.log(connectionPairs.length);
+      return connectionPairs;
     };
     const updateCharacterLinks = () => connectCharacterNodes(getCharactersConnections());
-    const updateCharactersData = newCharactersData => newCharactersData
-      .forEach(charData => this.charMap.get(charData.id).update(charData));
-    const updateEventData = eventData => {
-      // console.log('updating:', eventData.id);
-      addAndLinkEventCharacters(eventData);
-      updateCharactersData(eventData.characters);
-    };
-    const getCharacterConnections = (events) => {
-      saveEvents(events);
-      // refreshGraph();
-    };
-    const getEventCharactersData = events => events
-      .map(event =>
-        this.apiService.getEventCharacters(event.id, event.numCharacters)
+    const getCharacterConnections = (events) => saveEvents(events);
+    const getEventCharactersData = events => Promise.all(events.map(event =>
+        this.apiService.getEventCharacters(event.id)
           .toPromise()
-          .then(updateEventData));
+          .then(saveEventData)));
+    const updateCharactersWiki = charactersData =>
+      charactersData.forEach(charData => this.charMap.get(charData.id).update(charData))
+    const getEventsCharactersWiki = () =>
+      this.apiService.getEventsCharactersWiki()
+        .then(updateCharactersWiki);
 
-    const getAllEventCharactersData = events => this.apiService
-      .getAllEventsCharacters(events, updateEventData)
-      .then(x => console.log('all done!', x));
+
+    const getAllEventCharactersData = () => this.apiService
+      .getAllEventsCharacters().then(saveEvents)
+
 
     const renderGraph = () => this.chooseNClique();
     // start of events request
-    this.apiService.getEvents(this.eventLimit).subscribe(events => {
-      getCharacterConnections(events);
-      renderGraph();
-      Promise.all(getEventCharactersData(events))
-        .then(renderGraph);
-    });
-    this.setHeroesGroups();
-  }
-
-  private setHeroesGroups = () => {
-    const characters = this.charMap.values();
-    for (const char of characters) {
-      // TODO
-    }
+    this.apiService.getAllEventsCharacters()
+      .then(saveEvents)
+    // this.apiService.getEvents(this.eventLimit)
+    //   .then(getEventCharactersData)
+      .then(updateCharacterLinks)
+      .then(renderGraph)
+      .then(getEventsCharactersWiki)
+      .then(disableLoadAnimation)
+      .then(renderGraph);
   }
 
   private searchCharacterSuggest = (filterText: string) => {

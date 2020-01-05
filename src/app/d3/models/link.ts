@@ -3,7 +3,7 @@ import { Node } from './index';
 
 // Implementing SimulationLinkDatum interface into our custom Link class
 export class Link implements d3.SimulationLinkDatum<Node> {
-  static STRENGTH_FACTOR = (APP_CONFIG.LINK_WIDTH_FACTOR / (APP_CONFIG.MAX_VISIBLE_CHARS * Math.sqrt(APP_CONFIG.EVENT_LIMIT)));
+  static STRENGTH_FACTOR = ((APP_CONFIG.LINK_WIDTH_FACTOR) / (APP_CONFIG.MAX_VISIBLE_CHARS)); // * Math.log10(APP_CONFIG.EVENT_LIMIT)
   index?: number;
 
   source: Node;
@@ -20,13 +20,13 @@ export class Link implements d3.SimulationLinkDatum<Node> {
     return  Link.STRENGTH_FACTOR * this.source.character.linkStrength(this.target.character) ;
   }
   get opacity() {
-    return Math.sqrt(this.strength) / 100;
+    return APP_CONFIG.BASE_OPACITY * Math.log2(this.strength) / 100;
   }
   get isDragged() {
     return (this.source.isDragged || this.target.isDragged);
   }
   get color() {
-    return `rgba(200,200,50,${this.opacity})`;
+    return this.isDragged ? `rgba(200,0,50,${this.opacity})` : `rgba(200,200,50,${this.opacity})`;
   }
   get isVisible() {
     return this.strength > APP_CONFIG.VIEW_THRESHOLD || this.isDragged;

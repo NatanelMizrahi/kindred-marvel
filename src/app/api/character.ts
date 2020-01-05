@@ -18,7 +18,8 @@ export interface APICharacter {
       name: string
     }>;
   };
-  groups?: Set<string>;
+  aliases?: string[];
+  alliances?: string[];
 }
 
 export class Character {
@@ -30,6 +31,8 @@ export class Character {
   thumbnailURL: string;
   connections: Map<CharacterId, Set<EventId>>;
   node?: Node;
+  aliases?: string[];
+  alliances?: string[];
 
   constructor(apiCharacter: APICharacter) {
     Character.N = Character.N + 1;
@@ -39,20 +42,21 @@ export class Character {
     this.connections = new Map();
     this.thumbnailURL = apiCharacter.thumbnail ?
       `${apiCharacter.thumbnail.path}/standard_xlarge.${apiCharacter.thumbnail.extension}` :
-      this.randImage() ;
+      this.randImage();
   }
 
   update(apiCharacter: APICharacter) {
-    this.description = apiCharacter.description;
-    if (apiCharacter.thumbnail) {
-      this.thumbnailURL = `${apiCharacter.thumbnail.path}/standard_xlarge.${apiCharacter.thumbnail.extension}`;
+    if (!this.description) {
+      this.description = apiCharacter.description;
     }
+    this.alliances = apiCharacter.alliances;
+    this.aliases = apiCharacter.aliases;
+    console.log(this.alliances, this.aliases);
   }
 
-  get lexicalLinks() {
-    return this.connected.map(id => this.id < id ? [this.id, id] : [id, this.id]);
+  get lexicalStringLinks() {
+    return this.connected.map(id => this.id < id ? `${this.id}_${id}` : `${id}_${this.id}`);
   }
-
   get connected() {
     return [...this.connections.keys()];
   }
