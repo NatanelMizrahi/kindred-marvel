@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Node, Link } from './d3/models';
 import { MarvelApiService } from './api/marvel.api.service';
-import { HeroesApiService } from './api/heroes.api.service';
 import {Character} from './api/character';
 import {RenderService} from './shared/render.service';
 import APP_CONFIG from './app.config';
@@ -11,7 +10,8 @@ interface Pair {
   id2: any;
 }
 type CharName = string;
-
+type CharacterId = number;
+type EventId = number;
 
 @Component({
   selector: 'app-root',
@@ -30,8 +30,9 @@ export class AppComponent  implements OnInit {
   activeLinks: Link[] = [];
 
   linkMap: Map<Pair, Link>;
-  events: Map<number, any>;
-  charMap: Map<string, Character>;
+  events: Map<EventId, any>; // Event
+  charMap: Map<CharacterId, Character>;
+
   filteredCharMap: Map<CharName, Character>;
   filteredCharacterNames: CharName[] = [];
   characterQuery: any;
@@ -40,7 +41,6 @@ export class AppComponent  implements OnInit {
   constructor(
     private apiService: MarvelApiService,
     private renderService: RenderService,
-    private heroesApiService: HeroesApiService
   ) {
     this.events = new Map();
     this.charMap = new Map();
@@ -119,13 +119,14 @@ export class AppComponent  implements OnInit {
       .map(event =>
         this.apiService.getEventCharacters(event.id, event.numCharacters)
           .toPromise()
-          .then(updateEventData))
+          .then(updateEventData));
 
-    const getAllEventCharactersData = events => this.apiService.getAllEventsCharacters(events, updateEventData)
-      .subscribe(x => console.log('all done!', x));
+    const getAllEventCharactersData = events => this.apiService
+      .getAllEventsCharacters(events, updateEventData)
+      .then(x => console.log('all done!', x));
 
     const renderGraph = () => this.chooseNClique();
-    /** start of events request **/
+    // start of events request
     this.apiService.getEvents(this.eventLimit).subscribe(events => {
       getCharacterConnections(events);
       renderGraph();
@@ -138,7 +139,7 @@ export class AppComponent  implements OnInit {
   private setHeroesGroups = () => {
     const characters = this.charMap.values();
     for (const char of characters) {
-      this.heroesApiService.addGroups(char);
+      // TODO
     }
   }
 
@@ -158,7 +159,7 @@ export class AppComponent  implements OnInit {
     return this.filteredCharMap.get(name);
   }
 
-  private getTopConnections(connections: Map<string, Set<string>>) {
+  private getTopConnections(connections: Map<CharacterId, Set<EventId>>) {
     const connectionsComparator = (connA, connB) => connB[1].size - connA[1].size;
     const getCharacterId = connectionPair => connectionPair[0];
     const sortedConnections = Array
@@ -178,15 +179,8 @@ export class AppComponent  implements OnInit {
     this.updateActiveLinks();
   }
 
-  private getCharacters() {
-    this.apiService.getCharacters(Array.from(this.charMap.keys()));
-  }
-
   get characters() {
     return [...this.charMap.values()];
-  }
-  private getAllCharacters(limit= 200) {
-    this.apiService.getCharacters(Array.from(this.charMap.keys()));
   }
   private clear() {
     this.filteredCharacterNames = [];

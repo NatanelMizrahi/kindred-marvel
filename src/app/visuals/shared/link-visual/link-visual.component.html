@@ -1,11 +1,12 @@
-<svg:line
-  class="link"
-  *ngIf="link.isVisible"
-  [attr.stroke-width]="link.strength"
-  [attr.stroke]="link.color"
-  [attr.x1]="link.source.x"
-  [attr.y1]="link.source.y"
-  [attr.x2]="link.target.x"
-  [attr.y2]="link.target.y"
-></svg:line>
-
+<div *ngIf="visible">
+  <svg:line
+    class="link"
+    *ngIf="link.isVisible"
+    [attr.stroke-width]="link.strength"
+    [attr.stroke]="link.color"
+    [attr.x1]="link.source.x"
+    [attr.y1]="link.source.y"
+    [attr.x2]="link.target.x"
+    [attr.y2]="link.target.y"
+  ></svg:line>
+</div>

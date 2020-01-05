@@ -5,7 +5,7 @@ import {Link} from './link';
 
 // Implementing SimulationNodeDatum interface into our custom Node class
 export class Node implements d3.SimulationNodeDatum {
-  static dummy: Node = new Node(new Character({id: 'dummy', name: 'dummy'}));
+  static dummy: Node = new Node(new Character({id: -1, name: 'dummy'}));
 
   index?: number;
   x?: number;

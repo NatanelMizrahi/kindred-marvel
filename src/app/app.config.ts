@@ -1,10 +1,11 @@
 const APP_CONFIG = {
-  USE_CACHE : true,
-  EVENT_LIMIT: 10,
+  USE_CACHE: true,
+  EVENT_LIMIT: 15,
   LINK_WIDTH_FACTOR: 30,
   MAX_VISIBLE_CHARS: 25,
   N_IMAGES : 3,
   VIEW_THRESHOLD: 0.3,
+  VIEW_LINKS: false,
   SPECTRUM: [
     'rgb(222,237,250)',
     'rgb(176,212,243)',

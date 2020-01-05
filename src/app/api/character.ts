@@ -1,8 +1,8 @@
 import { Node } from '../d3/models';
 import APP_CONFIG from '../app.config';
 
-type CharacterId = string;
-type EventId = string;
+type CharacterId = number;
+type EventId = number;
 
 export interface APICharacter {
   id: CharacterId;
@@ -33,7 +33,7 @@ export class Character {
 
   constructor(apiCharacter: APICharacter) {
     Character.N = Character.N + 1;
-    this.id = String(apiCharacter.id);
+    this.id = apiCharacter.id;
     this.name = apiCharacter.name;
     this.description = apiCharacter.description;
     this.connections = new Map();
