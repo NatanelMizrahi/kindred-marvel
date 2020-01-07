@@ -70,8 +70,9 @@ function expressGetAllEventsCharacters(req,res){
     .catch(err => res.status(503).json(err)).catch(console.error);
 }
 function filterResponseFields(apiResponseArray){
-  const filterFields =  ({id, name, description, thumbnail, events, characters, urls}) =>
-                        ({id, name, description, thumbnail, events, characters, urls});
+  const dropMissing = obj => Object.keys(obj).forEach(key => obj[key] === undefined && delete obj[key]) || obj;
+  const filterFields =  ( {id, name, title, description, thumbnail, events, characters, urls}) => dropMissing
+                    ({id, name, title, description, thumbnail, events, characters, urls});
   return apiResponseArray.map(filterFields);
 }
 function marvelApiGET(uri){
@@ -198,3 +199,4 @@ module.exports = function () {
   this.expressGetAllEventsCharacters = expressGetAllEventsCharacters;
 }
 
+function pa(x){ x.forEach(e=>console.log(e)); return x;}

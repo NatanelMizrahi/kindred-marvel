@@ -1,5 +1,22 @@
-<div class="header">
+<div *ngIf="!loaded" class="center">
+  <div class="loader-text">Loading...</div>
+  <div class="loader">Loading...</div>
+</div>
+
+<div *ngIf="loaded" class="header">
   <img class="logo" src="assets/logo.png" />
+
+      <div class="btn-group mt-3 mr-3 right" role="group" >
+        <div *ngFor="let char of d3Service.chosenCharacters">
+          <button type="button" class="btn btn-secondary">{{ char.name }}</button>
+        </div>
+        <button *ngIf="d3Service.chosenCharacters.length === 2"
+                type="button"
+                class="btn btn-outline-warning">
+          View connections
+        </button>
+      </div>
+
   <div class="input-group mt-3 col-4">
     <input
       [(ngModel)]="characterQuery"
@@ -19,17 +36,18 @@
         type="button"
         class="btn btn-outline-warning"
         (click)="searchCharacterButton(characterQuery)"
-
       >
         Search
       </button>
+      <button
+        type="button"
+        class="btn btn-outline-warning"
+        (click)="setChosenChars(characterQuery)"
+      >
+        Choose
+      </button>
     </div>
   </div>
-</div>
-
-<div *ngIf="!loaded" class="center">
-  <div class="loader-text">Loading...</div>
-  <div class="loader">Loading...</div>
 </div>
 
 <graph [nodes]="activeNodes" [links]="activeLinks"></graph>
@@ -38,3 +56,4 @@
   <a target="_blank" href="http://marvel.com">Data provided by Marvel. © 2019 MARVEL</a>
 </div>
 
+<tooltip *ngFor="let node of nodes" [node]="node"></tooltip>

@@ -20,6 +20,10 @@ export interface APICharacter {
   };
   aliases?: string[];
   alliances?: string[];
+  powers?: string[];
+  alignment?: string;
+  full_name?: string;
+  type?: string;
 }
 
 export class Character {
@@ -31,8 +35,13 @@ export class Character {
   thumbnailURL: string;
   connections: Map<CharacterId, Set<EventId>>;
   node?: Node;
+
   aliases?: string[];
   alliances?: string[];
+  powers?: string[];
+  alignment?: string;
+  fullName?: string;
+  type?: string;
 
   constructor(apiCharacter: APICharacter) {
     Character.N = Character.N + 1;
@@ -46,12 +55,12 @@ export class Character {
   }
 
   update(apiCharacter: APICharacter) {
-    if (!this.description) {
-      this.description = apiCharacter.description;
-    }
-    this.alliances = apiCharacter.alliances;
-    this.aliases = apiCharacter.aliases;
-    console.log(this.alliances, this.aliases);
+    this.alliances =  apiCharacter.alliances;
+    this.aliases =    apiCharacter.aliases;
+    this.powers =     apiCharacter.powers;
+    this.fullName =   apiCharacter.full_name;
+    this.alignment =  apiCharacter.alignment;
+    this.type =       apiCharacter.type;
   }
 
   get lexicalStringLinks() {

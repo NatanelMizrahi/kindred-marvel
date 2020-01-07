@@ -1,0 +1,37 @@
+<div class="d3-tip">
+  <div class="media">
+    <img [src]="node.character.thumbnailURL" class="mr-3" alt="...">
+    <div class="media-body">
+      <h5 class="mt-0">{{node.character.name}}</h5>
+      <p *ngIf="node.character.fullName">
+        a.k.a {{node.character.fullName}}
+      </p>
+      <p *ngIf="node.character.description">
+        {{node.character.description}}
+      </p>
+
+      <div class="row">
+        <div class="col-sm" *ngIf="hasPowers">
+          <div class="well">
+            <b>powers</b>
+            <ul>
+              <li *ngFor="let power of charPowers">
+                <span class="powers" [innerHtml]="power"></span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-sm" *ngIf="hasAlliances">
+          <div class="well">
+            <b>alliances</b>
+            <ul>
+              <li *ngFor="let team of charAlliances">
+                {{team}}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

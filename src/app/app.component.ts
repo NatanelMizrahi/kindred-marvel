@@ -5,6 +5,8 @@ import {Character} from './api/character';
 import {RenderService} from './shared/render.service';
 import APP_CONFIG from './app.config';
 import {flatten} from '@angular/compiler';
+import {Event} from './api/event';
+import {D3Service} from './d3';
 
 type IdPair = string;
 type CharName = string;
@@ -29,7 +31,7 @@ export class AppComponent  implements OnInit {
 
   charMap: Map<CharacterId, Character>;
   linkMap: Map<IdPair, Link>;
-  events: Map<EventId, any>; // Event
+  events: Map<EventId, Event>;
 
   filteredCharMap: Map<CharName, Character>;
   filteredCharacterNames: CharName[] = [];
@@ -41,6 +43,7 @@ export class AppComponent  implements OnInit {
   constructor(
     private apiService: MarvelApiService,
     private renderService: RenderService,
+    private d3Service: D3Service
   ) {
     this.events = new Map();
     this.charMap = new Map();
@@ -51,11 +54,44 @@ export class AppComponent  implements OnInit {
 
   ngOnInit(): void {
     const disableLoadAnimation = () => this.loaded = true;
+
     const addCharacterNode = (char: Character) => {
       this.nodes.push(new Node(char));
       this.charMap.set(char.id, char);
     };
-    const connectCharacterNodes = (connectionSet) => {
+
+    const addEventCharacters = event => {
+      for (const char of event.characters) {
+        if (!this.charMap.has(char.id)) {
+          addCharacterNode(new Character(char));
+        }
+      }
+    };
+
+    const linkEventCharacters = event => {
+      const eventCharacterIds = event.characters.map(character => character.id);
+      this.events.get(event.id).updateCharacters(eventCharacterIds);
+      eventCharacterIds.forEach(charId =>
+        this.charMap.get(charId)
+          .addConnections(eventCharacterIds, event.id));
+    };
+
+    const registerEvent = event => {
+      const savedEvent = this.events.get(event.id);
+      if (!savedEvent) {
+        this.events.set(event.id, event);
+      }
+    };
+
+    const saveEventData = event => {
+      registerEvent(event);
+      addEventCharacters(event);
+      linkEventCharacters(event);
+    };
+
+    const saveEvents = events => events.forEach(saveEventData);
+    const registerEvents = events => events.forEach(registerEvent);
+    const connectCharacterNodes = connectionSet => {
       for (const pairId of connectionSet) {
         const [id1, id2] = pairId.split('_');
         const char1 = this.charMap.get(+id1);
@@ -68,63 +104,42 @@ export class AppComponent  implements OnInit {
       }
     };
 
-    const addEventCharacters = event => {
-      for (const char of event.characters) {
-        if (!this.charMap.has(char.id)) {
-          addCharacterNode(new Character(char));
-        }
-      }
-    };
-    const linkEventCharacters = event => {
-      const eventCharacterIds = event.characters.map(character => character.id);
-      eventCharacterIds.forEach(charId =>
-        this.charMap.get(charId)
-          .addConnections(eventCharacterIds, event.id));
-    };
-    const refreshGraph = () => this.renderService.refreshView();
-    const registerEvent = event => this.events.set(event.id, event);
-    const saveEventData = event => {
-      registerEvent(event);
-      addEventCharacters(event);
-      linkEventCharacters(event);
-    };
-
-    const saveEvents = events => events.forEach(saveEventData);
     const getCharactersConnections = () => {
       let connectionPairs = [];
       this.characters.forEach(char => connectionPairs.push(...char.lexicalStringLinks));
       connectionPairs = [...new Set(connectionPairs)];
-      console.log(connectionPairs.length);
+      console.log('#links=', connectionPairs.length);
       return connectionPairs;
     };
-    const updateCharacterLinks = () => connectCharacterNodes(getCharactersConnections());
-    const getCharacterConnections = (events) => saveEvents(events);
-    const getEventCharactersData = events => Promise.all(events.map(event =>
-        this.apiService.getEventCharacters(event.id)
-          .toPromise()
-          .then(saveEventData)));
+
+    const updateAllCharactersLinks = () => connectCharacterNodes(getCharactersConnections());
+
     const updateCharactersWiki = charactersData =>
-      charactersData.forEach(charData => this.charMap.get(charData.id).update(charData))
+      charactersData.forEach(charData => this.charMap.get(charData.id).update(charData));
+
     const getEventsCharactersWiki = () =>
       this.apiService.getEventsCharactersWiki()
         .then(updateCharactersWiki);
 
+    const getEventsCharacters = () => this.apiService.getAllEventsCharacters();
+    const renderGraph = () => this.chooseNClique(APP_CONFIG.MAX_VISIBLE_CHARS);
+    const getEvents = () => this.apiService
+      .getEvents(this.eventLimit)
+      .then(registerEvents);
 
-    const getAllEventCharactersData = () => this.apiService
-      .getAllEventsCharacters().then(saveEvents)
-
-
-    const renderGraph = () => this.chooseNClique();
     // start of events request
-    this.apiService.getAllEventsCharacters()
+    getEvents()
+      .then(getEventsCharacters)
       .then(saveEvents)
-    // this.apiService.getEvents(this.eventLimit)
-    //   .then(getEventCharactersData)
-      .then(updateCharacterLinks)
+      .then(updateAllCharactersLinks)
       .then(renderGraph)
       .then(getEventsCharactersWiki)
       .then(disableLoadAnimation)
       .then(renderGraph);
+  }
+
+  get characters() {
+    return [...this.charMap.values()];
   }
 
   private searchCharacterSuggest = (filterText: string) => {
@@ -134,6 +149,9 @@ export class AppComponent  implements OnInit {
     for (const char of allCharacters) {
       if (char.name.toLowerCase().includes(filterText)) {
         this.filteredCharMap.set(char.name, char);
+        if (this.filteredCharMap.size === APP_CONFIG.SEARCH_LIMIT) {
+          break;
+        }
       }
     }
     this.filteredCharacterNames = [...this.filteredCharMap.keys()];
@@ -163,18 +181,13 @@ export class AppComponent  implements OnInit {
     this.updateActiveLinks();
   }
 
-  get characters() {
-    return [...this.charMap.values()];
-  }
-  private clear() {
-    this.filteredCharacterNames = [];
-  }
-  private chooseNClique() {
+  private chooseNClique(numCharacters: number) {
     console.log('rendering graph');
+    console.log(this.events);
     const nodeSizeComparator = (nodeA, nodeB) => nodeB.linkCount - nodeA.linkCount;
     this.activeNodes = this.nodes
       .sort(nodeSizeComparator)
-      .slice(0, APP_CONFIG.MAX_VISIBLE_CHARS);
+      .slice(0, numCharacters);
     this.updateActiveLinks();
   }
 
@@ -186,5 +199,9 @@ export class AppComponent  implements OnInit {
         activeNodesSet.has(link.target))
     ));
     this.renderService.refreshView();
+  }
+  private setChosenChars(name: string) {
+    const char = this.getCharFromName(name);
+    this.d3Service.chooseCharacter(char);
   }
 }

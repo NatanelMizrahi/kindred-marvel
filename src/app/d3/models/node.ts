@@ -2,6 +2,7 @@ import * as d3 from 'd3';
 import APP_CONFIG from '../../app.config';
 import {Character} from '../../api/character';
 import {Link} from './link';
+import {ElementRef} from '@angular/core';
 
 // Implementing SimulationNodeDatum interface into our custom Node class
 export class Node implements d3.SimulationNodeDatum {
@@ -20,6 +21,8 @@ export class Node implements d3.SimulationNodeDatum {
   isDragged: boolean;
   character: Character;
   links: Link[];
+
+  getTooltipHTML?: () => string;
   constructor(character: Character) {
     this.id = character.name;
     this.character = character;
@@ -52,4 +55,5 @@ export class Node implements d3.SimulationNodeDatum {
     const index = Math.floor(APP_CONFIG.SPECTRUM.length * this.normal);
     return APP_CONFIG.SPECTRUM[index];
   }
+
 }

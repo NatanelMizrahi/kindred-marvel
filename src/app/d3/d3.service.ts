@@ -2,8 +2,7 @@ import {Injectable} from '@angular/core';
 import {ForceDirectedGraph, Link, Node} from './models';
 import * as d3 from 'd3';
 import d3Tip from 'd3-tip';
-import { D3TooltipComponent } from '../../../bkps/d3-tooltip/d3-tooltip.component';
-// import {D3TooltipService} from 'ngx-d3-tooltip';
+import {Character} from '../api/character';
 
 @Injectable({
   providedIn: 'root'
@@ -13,12 +12,50 @@ export class D3Service {
    * while maintaining the d3 simulations physics
    */
   pinnedNode: Node = Node.dummy;
-  constructor(
-    // private tipService: D3TooltipService
-  ) {}
+  chosenCharacters: Character[] = [];
+  constructor() {}
 
-  bindTooltipBehaviour(svgElement, containerElement) {}
-  /** A method to bind a pan and zoom behaviour to an svg element */
+  applyHoverableBehaviour(element, node: Node, graph: ForceDirectedGraph) {
+
+    const pinNode = () => {
+      this.pinnedNode = node;
+      this.pinnedNode.fx = this.pinnedNode.x;
+      this.pinnedNode.fy = this.pinnedNode.y;
+    };
+    const releaseNode = () => {
+      this.pinnedNode.fx = null;
+      this.pinnedNode.fy = null;
+    };
+
+    const d3element = d3.select(element);
+    const tip = d3Tip().html(node.getTooltipHTML);
+
+    const onRightClick = (d, i) => {
+      d3.event.preventDefault();
+      this.chooseCharacter(node.character);
+    };
+
+    function onHover(d) {
+        pinNode();
+        tip.show(d, this);
+    }
+
+    function onMouseOut(d) {
+      releaseNode();
+      tip.hide(d, this);
+    }
+    d3element.call(tip);
+    d3element
+      .on('contextmenu', onRightClick)
+      .on('mouseover', onHover)
+      .on('mouseout', onMouseOut);
+  }
+  chooseCharacter(character) {
+      if (this.chosenCharacters.indexOf(character) === -1){
+        this.chosenCharacters = [character, ...this.chosenCharacters].slice(0, 2);
+      }
+  }
+    /** A method to bind a pan and zoom behaviour to an svg element */
   applyZoomableBehaviour(svgElement, containerElement) {
     const svg = d3.select(svgElement);
     const container = d3.select(containerElement);
@@ -30,24 +67,17 @@ export class D3Service {
 
     const zoom = d3.zoom().on('zoom', zoomed);
     svg.call(zoom);
-    // const tip = d3Tip()
-    //   .attr("class", "d3-tip")
-    //   .html(d => d.toFixed(2))
-    //   .direction('nw')
-    //   .offset([0, 3])
-    // ;
-    //
-    // // .html(d => `<strong>Frequency:</strong> <span style="color:red"> ${d}</span>`);
-    // svg.call(tip);
-
   }
 
   /** A method to bind a draggable behaviour to an svg element */
   applyDraggableBehaviour(element, node: Node, graph: ForceDirectedGraph) {
     const d3element = d3.select(element);
 
-    const pinNode = (nodeToPin) => this.pinnedNode = nodeToPin;
-    const releaseNode = () => Object.assign(this.pinnedNode, { fx : null, fy : null});
+    const pinNode = nodeToPin => this.pinnedNode = nodeToPin;
+    const releaseNode = () => {
+      this.pinnedNode.fx = null;
+      this.pinnedNode.fy = null;
+    };
 
     function started() {
       releaseNode();
@@ -77,24 +107,6 @@ export class D3Service {
 
     d3element.call(d3.drag()
       .on('start', started));
-  /////
-    d3element.on('contextmenu', (d, i) => {
-      d3.event.preventDefault();
-      console.log('right click!');
-    });
-    const tip = d3Tip()
-      .attr("class", "d3-tip")
-      .html(d => `<strong>Frequency:</strong> <span style="color:red">${d}</span>`)
-      .direction('nw')
-      .offset([0, 3])
-    ;
-
-      // .html(d => `<strong>Frequency:</strong> <span style="color:red"> ${d}</span>`);
-    d3element.call(tip);
-    d3element
-      .on("mouseover", d => tip.show(d))
-      .on("mouseover", d => console.log(d))
-      .on("mouseout", d => tip.hide(d));
   }
 
   getForceDirectedGraph(nodes: Node[], links: Link[], options: { width, height} ) {
