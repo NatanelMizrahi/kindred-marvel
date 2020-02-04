@@ -1,8 +1,9 @@
-import { Node } from '../d3/models';
+import {LinkType, Node} from '../d3/models';
 import APP_CONFIG from '../app.config';
 
 type CharacterId = number;
 type EventId = number;
+export type TeamName = string;
 
 export interface APICharacter {
   id: CharacterId;
@@ -34,6 +35,7 @@ export class Character {
   description?: string;
   thumbnailURL: string;
   connections: Map<CharacterId, Set<EventId>>;
+  allies: Map<CharacterId, Set<TeamName>>;
   node?: Node;
 
   aliases?: string[];
@@ -49,6 +51,7 @@ export class Character {
     this.name = apiCharacter.name;
     this.description = apiCharacter.description;
     this.connections = new Map();
+    this.allies = new Map();
     this.thumbnailURL = apiCharacter.thumbnail ?
       `${apiCharacter.thumbnail.path}/standard_xlarge.${apiCharacter.thumbnail.extension}` :
       this.randImage();
@@ -63,11 +66,15 @@ export class Character {
     this.type =       apiCharacter.type;
   }
 
-  get lexicalStringLinks() {
-    return this.connected.map(id => this.id < id ? `${this.id}_${id}` : `${id}_${this.id}`);
+  lexicalStringLinks(linkType: LinkType) {
+    const connections = linkType === 'EVENT' ? this.connected : this.allied;
+    return connections.map(id => this.id < id ? `${this.id}_${id}_${linkType}` : `${id}_${this.id}_${linkType}`);
   }
   get connected() {
     return [...this.connections.keys()];
+  }
+  get allied() {
+    return [...this.allies.keys()];
   }
   get linkCount() {
     return this.connections.size;
@@ -95,6 +102,17 @@ export class Character {
   randImage() {
     const rand = Math.floor(Math.random() * (APP_CONFIG.N_IMAGES));
     return `assets/sprites/${rand}.svg`;
+  }
+
+  updateAllies(team: TeamName, allies: Character[]) {
+    for (const ally of allies) {
+      if (ally.id !== this.id) {
+        if (!this.allies.has(ally.id)) {
+          this.allies.set(ally.id, new Set<TeamName>());
+        }
+        this.allies.get(ally.id).add(team);
+      }
+    }
   }
 }
 

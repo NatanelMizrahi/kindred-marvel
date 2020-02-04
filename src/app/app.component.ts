@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { Node, Link } from './d3/models';
+import {Node, Link, LinkType} from './d3/models';
 import { MarvelApiService } from './api/marvel.api.service';
-import {Character} from './api/character';
+import {Character, TeamName} from './api/character';
 import {RenderService} from './shared/render.service';
 import APP_CONFIG from './app.config';
 import {flatten} from '@angular/compiler';
@@ -93,26 +93,28 @@ export class AppComponent  implements OnInit {
     const registerEvents = events => events.forEach(registerEvent);
     const connectCharacterNodes = connectionSet => {
       for (const pairId of connectionSet) {
-        const [id1, id2] = pairId.split('_');
+        const [id1, id2, linkType] = pairId.split('_');
         const char1 = this.charMap.get(+id1);
         const char2 = this.charMap.get(+id2);
         if (!this.linkMap.has(pairId)) {
-          const link = new Link(char1.node, char2.node);
+          const link = new Link(char1.node, char2.node, linkType);
           this.links.push(link);
           this.linkMap.set(pairId, link);
         }
       }
     };
 
-    const getCharactersConnections = () => {
+    const getCharactersConnections = (linkType: LinkType) => {
       let connectionPairs = [];
-      this.characters.forEach(char => connectionPairs.push(...char.lexicalStringLinks));
+      this.characters.forEach(char => connectionPairs.push(...char.lexicalStringLinks(linkType)));
       connectionPairs = [...new Set(connectionPairs)];
       console.log('#links=', connectionPairs.length);
       return connectionPairs;
     };
 
-    const updateAllCharactersLinks = () => connectCharacterNodes(getCharactersConnections());
+    const updateAllCharactersLinks = (linkType: LinkType) => connectCharacterNodes(getCharactersConnections(linkType));
+    const updateAllCharactersEventLinks = () => updateAllCharactersLinks('EVENT');
+    const updateAllCharactersAllianceLinks = () => updateAllCharactersLinks('ALLIANCE');
 
     const updateCharactersWiki = charactersData =>
       charactersData.forEach(charData => this.charMap.get(charData.id).update(charData));
@@ -121,6 +123,33 @@ export class AppComponent  implements OnInit {
       this.apiService.getEventsCharactersWiki()
         .then(updateCharactersWiki);
 
+    const updateCharacterAlliances = () => {
+      const teamMembersMap: Map<TeamName, Character[]> = new Map()
+      for (const char of this.characters) {
+        if (char.alliances) {
+          console.log(char.name, char.alliances);
+          for (const team of char.alliances) {
+            if (!teamMembersMap.has(team)) {
+              teamMembersMap.set(team, []);
+            }
+            teamMembersMap.get(team).push(char);
+          }
+        }
+      }
+      // TODO: maybe remove teams later on.
+      for (const char of this.characters) {
+        if (teamMembersMap.has(char.name)) {
+          // character is actually a team, add a link to each of its members
+          teamMembersMap.get(char.name).push(char);
+        }
+      }
+      teamMembersMap.forEach((allies, team, map) =>
+        allies.forEach(char => char.updateAllies(team, allies)));
+    }
+    const AddAlliancesLinks = () => {
+      updateCharacterAlliances();
+      updateAllCharactersAllianceLinks();
+    }
     const getEventsCharacters = () => this.apiService.getAllEventsCharacters();
     const renderGraph = () => this.chooseNClique(APP_CONFIG.MAX_VISIBLE_CHARS);
     const getEvents = () => this.apiService
@@ -131,9 +160,10 @@ export class AppComponent  implements OnInit {
     getEvents()
       .then(getEventsCharacters)
       .then(saveEvents)
-      .then(updateAllCharactersLinks)
+      .then(updateAllCharactersEventLinks)
       .then(renderGraph)
       .then(getEventsCharactersWiki)
+      .then(AddAlliancesLinks)
       .then(disableLoadAnimation)
       .then(renderGraph);
   }
@@ -183,7 +213,6 @@ export class AppComponent  implements OnInit {
 
   private chooseNClique(numCharacters: number) {
     console.log('rendering graph');
-    console.log(this.events);
     const nodeSizeComparator = (nodeA, nodeB) => nodeB.linkCount - nodeA.linkCount;
     this.activeNodes = this.nodes
       .sort(nodeSizeComparator)
