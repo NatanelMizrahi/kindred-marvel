@@ -6,7 +6,7 @@ const marvelAPI = new marvelAPIWrapper();
 const marvelWiki = new marvelWikiWrapper();
 
 // express
-const port = 8080;
+const port = process.env.PORT || 8080;
 const app = express();
 const distDir = __dirname + "/dist/";
 const jsonParser = bodyParser.json({limit: 1024 * 1024 * 20, type: "application/json"});
