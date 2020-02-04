@@ -29,6 +29,7 @@
     "fuzzyset.js": "0.0.8",
     "http": "0.0.0",
     "mongodb": "^3.4.1",
+    "request": "^2.88.0",
     "request-promise": "^4.2.5",
     "rxjs": "^6.5.3",
     "rxjs-compat": "^6.5.3",
