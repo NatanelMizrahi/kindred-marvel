@@ -2,7 +2,7 @@
   <div class="media">
     <img [src]="node.character.thumbnailURL" class="mr-3" alt="...">
     <div class="media-body">
-      <h5 class="mt-0">{{node.character.name}}</h5>
+      <h5 class="mt-0 red-txt">{{node.character.name}}</h5>
       <p *ngIf="node.character.fullName">
         a.k.a {{node.character.fullName}}
       </p>
@@ -13,7 +13,7 @@
       <div class="row">
         <div class="col-sm" *ngIf="hasPowers">
           <div class="well">
-            <b>powers</b>
+            <b class="mb-3">POWERS</b>
             <ul>
               <li *ngFor="let power of charPowers">
                 <span class="powers" [innerHtml]="power"></span>
@@ -23,7 +23,7 @@
         </div>
         <div class="col-sm" *ngIf="hasAlliances">
           <div class="well">
-            <b>alliances</b>
+            <b class="mb-3">ALLIANCES</b>
             <ul>
               <li *ngFor="let team of charAlliances">
                 {{team}}

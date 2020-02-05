@@ -1,31 +1,6 @@
 import {LinkType, Node} from '../d3/models';
 import APP_CONFIG from '../app.config';
-
-type CharacterId = number;
-type EventId = number;
-export type TeamName = string;
-
-export interface APICharacter {
-  id: CharacterId;
-  name: string;
-  description?: string;
-  thumbnail?: {
-    path: string,
-    extension: string
-  };
-  events?: {
-    items: Array<{
-      resourceURI: string,
-      name: string
-    }>;
-  };
-  aliases?: string[];
-  alliances?: string[];
-  powers?: string[];
-  alignment?: string;
-  full_name?: string;
-  type?: string;
-}
+import {APICharacter, CharacterId, EventId, TeamName} from './types';
 
 export class Character {
   static N = 0;
@@ -34,6 +9,7 @@ export class Character {
   name: string;
   description?: string;
   thumbnailURL: string;
+  marvelURL?: string;
   connections: Map<CharacterId, Set<EventId>>;
   allies: Map<CharacterId, Set<TeamName>>;
   node?: Node;
@@ -64,6 +40,8 @@ export class Character {
     this.fullName =   apiCharacter.full_name;
     this.alignment =  apiCharacter.alignment;
     this.type =       apiCharacter.type;
+    const wikiUrls = apiCharacter.urls.filter(url => url.type === 'wiki');
+    this.marvelURL = wikiUrls.length > 0 ? wikiUrls[0].url : apiCharacter.urls[0].url;
   }
 
   lexicalStringLinks(linkType: LinkType) {

@@ -27,7 +27,7 @@
   position: absolute;
   bottom: 0;
 }
-.footer a {
+.footer .links{
   text-decoration: none;
   color: lightgrey;
   font-weight: bold;
@@ -40,9 +40,6 @@
   right:0;
   top:0;
   bottom:0;
-}
-.footer a:hover {
-  color: aliceblue;
 }
 
 /* loader */

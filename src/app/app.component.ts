@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import {Node, Link, LinkType} from './d3/models';
 import { MarvelApiService } from './api/marvel.api.service';
-import {Character, TeamName} from './api/character';
+import {Character} from './api/character';
 import {RenderService} from './shared/render.service';
 import APP_CONFIG from './app.config';
 import {flatten} from '@angular/compiler';
 import {Event} from './api/event';
 import {D3Service} from './d3';
+import {TeamName} from './api/types';
 
 type IdPair = string;
 type CharName = string;
@@ -127,7 +128,6 @@ export class AppComponent  implements OnInit {
       const teamMembersMap: Map<TeamName, Character[]> = new Map()
       for (const char of this.characters) {
         if (char.alliances) {
-          console.log(char.name, char.alliances);
           for (const team of char.alliances) {
             if (!teamMembersMap.has(team)) {
               teamMembersMap.set(team, []);

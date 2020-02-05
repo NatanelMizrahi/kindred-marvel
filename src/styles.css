@@ -18,3 +18,45 @@ body::after {
   z-index: -1;
 }
 
+a a:link, a:visited, a:hover, a:active {
+  text-decoration: none;
+}
+
+ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+ul li {
+  padding-bottom: 3px;
+}
+
+.red-txt {
+  color: #ff4b37;
+}
+
+.red-txt:hover {
+  opacity: 0.6;
+}
+
+.dark-modal .modal-content {
+  background-color: #292b2c;
+  color: white;
+}
+.dark-modal .close {
+  color: white;
+}
+
+.footer a{
+  color: lightgrey;
+}
+
+.footer a:hover {
+  color: aliceblue;
+}
+
+.icon {
+  height:100px;
+  width:100px;
+}
+

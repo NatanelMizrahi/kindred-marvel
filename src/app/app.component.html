@@ -6,16 +6,18 @@
 <div *ngIf="loaded" class="header">
   <img class="logo" src="assets/logo.png" />
 
-      <div class="btn-group mt-3 mr-3 right" role="group" >
-        <div *ngFor="let char of d3Service.chosenCharacters">
-          <button type="button" class="btn btn-secondary">{{ char.name }}</button>
-        </div>
-        <button *ngIf="d3Service.chosenCharacters.length === 2"
-                type="button"
-                class="btn btn-outline-warning">
-          View connections
-        </button>
-      </div>
+  <div class="btn-group mt-3 mr-3 right" role="group">
+    <div *ngFor="let char of d3Service.chosenCharacters">
+      <button type="button" class="btn btn-secondary">{{ char.name }}</button>
+    </div>
+
+    <connection-viewer
+      *ngIf="d3Service.chosenCharacters.length === 2"
+      [char1]="this.d3Service.chosenCharacters[0]"
+      [char2]="this.d3Service.chosenCharacters[1]"
+      [allEvents]="this.events"
+    ></connection-viewer>
+  </div>
 
   <div class="input-group mt-3 col-4">
     <input
@@ -53,7 +55,16 @@
 <graph [nodes]="activeNodes" [links]="activeLinks"></graph>
 
 <div class="footer">
-  <a target="_blank" href="http://marvel.com">Data provided by Marvel. © 2019 MARVEL</a>
+  <div class="links">
+    <a target="_blank" href="http://marvel.com">
+      Data provided by Marvel. © 2019 MARVEL
+    </a>
+    &bull;
+<!--    <a target="_blank" href="http://marvel.com">-->
+<!--      ABOUT-->
+<!--    </a>-->
+    <about-modal></about-modal>
+  </div>
 </div>
 
 <tooltip *ngFor="let node of nodes" [node]="node"></tooltip>

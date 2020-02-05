@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import {catchError, map} from 'rxjs/operators';
 import {throwError} from 'rxjs';
 import { Character } from './character';
-import { Event, APIEvent, CharIdObject } from './event';
+import { Event} from './event';
+import {APIEvent, CharIdObject} from './types';
 
 interface APIResponse<T> {
   data: { results: T[] };

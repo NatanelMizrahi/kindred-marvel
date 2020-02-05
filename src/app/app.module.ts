@@ -9,8 +9,11 @@ import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { HoverableDirective } from './d3/directives/hoverable.directive';
 import { TooltipComponent } from './visuals/tooltip/tooltip.component';
-import { ConnectionViewerComponent } from './connection-viewer/connection-viewer.component';
-
+import { ConnectionViewerComponent } from './connections/connection-viewer/connection-viewer.component';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+// import { ConnectionViewerComponent } from './modal/modal-basic';
+import { AboutModalComponent } from './about/about';
+import { EventScrollerComponent } from './connections/event-scroller/event-scroller.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -22,11 +25,14 @@ import { ConnectionViewerComponent } from './connection-viewer/connection-viewer
     HoverableDirective,
     TooltipComponent,
     ConnectionViewerComponent,
+    EventScrollerComponent,
+    AboutModalComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
-    FormsModule],
+    FormsModule,
+    NgbModule],
   providers: [D3Service],
   bootstrap: [AppComponent],
 })

@@ -1,0 +1,20 @@
+<ngb-carousel *ngIf="events">
+  <div *ngFor="let event of events">
+    <ng-template ngbSlide>
+      <div class="media">
+        <div class="col-2">
+          <img [src]="event.thumbnailURL" class="img-sm mr-3" alt="N/A">
+        </div>
+        <div class="media-body col-10">
+          <div class="card m-3 p-3 text-left dark-bg">
+              <a [href]="event.marvelURL" target="_blank">
+                <h4 class="red-txt">{{event.title}}</h4>
+              </a>
+              <p>{{event.description}}</p>
+          </div>
+
+        </div>
+      </div>
+    </ng-template>
+  </div>
+</ngb-carousel>
