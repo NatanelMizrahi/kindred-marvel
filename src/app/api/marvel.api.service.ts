@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {catchError, map} from 'rxjs/operators';
-import {throwError} from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Character } from './character';
 import { Event} from './event';
 import {APIEvent, CharIdObject} from './types';
@@ -44,14 +43,11 @@ export class MarvelApiService {
   getEventsCharactersWiki() {
     return this.http.get<Array<any>>('/events/characters/wiki').toPromise();
   }
-  // TODO: deprecate
-  // API call signature aux fuctions
-  private errorHandler() {
-    return catchError(error => {
-      const errMsg = (error.message) ? error.message : error.status ? `${error.status} - ${error.statusText}` : 'Server error';
-      console.error(errMsg);
-      return throwError(error);
-    });
+  // TODO: FE error handling
+  private errorHandler(error) {
+    const errMsg = (error.message) ? error.message : error.status ? `${error.status} - ${error.statusText}` : 'Server error';
+    console.error(errMsg);
+    return error;
   }
 
 }

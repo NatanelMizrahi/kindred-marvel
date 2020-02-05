@@ -60,3 +60,14 @@ ul li {
   width:100px;
 }
 
+.xs-icon {
+  padding: 7px;
+  height: 40px;
+  width: 40px;
+}
+
+.inline {
+  display: inline;
+  position: relative;
+  float: left;
+}

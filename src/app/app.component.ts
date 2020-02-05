@@ -155,10 +155,13 @@ export class AppComponent  implements OnInit {
     const getEvents = () => this.apiService
       .getEvents(this.eventLimit)
       .then(registerEvents);
-
+    let n = 0;
+    const p = a => { console.log(n, a); n++; return a; };
     // start of events request
     getEvents()
+      .then(p)
       .then(getEventsCharacters)
+      .then(p)
       .then(saveEvents)
       .then(updateAllCharactersEventLinks)
       .then(renderGraph)

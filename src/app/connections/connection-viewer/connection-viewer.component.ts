@@ -26,15 +26,15 @@ export class ConnectionViewerComponent {
   constructor(private modalService: NgbModal) {
     // TODO: change Char to contain event instead of eventId
   }
-
+  havePowers() {
+    return this.characters.some(char => char.hasPowers);
+  }
 
   open(content) {
     this.characters = [this.char1, this.char2];
     console.log(this.characters);
     this.commonEvents = [...this.char1.connections.get(this.char2.id)].map(eventId => this.allEvents.get(eventId));
-    // this.commonAlliances = [...this.char1.allies.get(this.char2.id)];
-    this.commonAlliances = [];
-
+    this.commonAlliances = [...(this.char1.allies.get(this.char2.id) || [])];
     this.modalService.open(content, this.options);
   }
 

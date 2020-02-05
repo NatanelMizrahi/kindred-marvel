@@ -12,11 +12,12 @@ export class Character {
   marvelURL?: string;
   connections: Map<CharacterId, Set<EventId>>;
   allies: Map<CharacterId, Set<TeamName>>;
-  node?: Node;
+  powers: string[];
 
+  node?: Node;
+  events: Set<EventId>;
   aliases?: string[];
   alliances?: string[];
-  powers?: string[];
   alignment?: string;
   fullName?: string;
   type?: string;
@@ -28,6 +29,8 @@ export class Character {
     this.description = apiCharacter.description;
     this.connections = new Map();
     this.allies = new Map();
+    this.events = new Set();
+    this.powers = [];
     this.thumbnailURL = apiCharacter.thumbnail ?
       `${apiCharacter.thumbnail.path}/standard_xlarge.${apiCharacter.thumbnail.extension}` :
       this.randImage();
@@ -57,7 +60,13 @@ export class Character {
   get linkCount() {
     return this.connections.size;
   }
-
+  get alignemntIcon() {
+    const img = this.alignment ? this.alignment.replace('/', '') : '0'
+    return `assets/sprites/${img}.png`;
+  }
+  get hasPowers() {
+    return this.powers.length > 0;
+  }
   addConnection = (characterId, eventId) => {
     if (!this.connections.has(characterId)) {
       this.connections.set(characterId, new Set([eventId]));
@@ -71,6 +80,7 @@ export class Character {
   }
 
   addConnections = (characterIds, eventId) => {
+    this.events.add(eventId);
     for (const id of characterIds) {
       if (id !== this.id) {
         this.addConnection(id, eventId);
