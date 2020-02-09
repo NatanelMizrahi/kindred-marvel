@@ -67,7 +67,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
         <ol>
           <li>The website was developed with <a href="https://en.wikipedia.org/wiki/MEAN_(software_bundle)" target="_blank">MEAN stack</a></li>
           <li>Data provided by <a href="http://marvel.com" target="_blank">Marvel. © 2020 MARVEL</a> and Wikipedia</li>
-          <li>In the early stages of building the D3 graph, we relied heavily on <a href="https://medium.com/netscape/visualizing-data-with-angular-and-d3-209dde784aeb">this tutorial</a></li>
+          <li>In the early stages of building the D3 graph, we relied heavily on <a href="https://medium.com/netscape/visualizing-data-with-angular-and-d3-209dde784aeb" target="_blank">this tutorial</a></li>
           <li>Fuzzy string matching done with  <a href="https://glench.github.io/fuzzyset.js/" target="_blank">fuzzyset.js</a></li>
         </ol>
         <hr>

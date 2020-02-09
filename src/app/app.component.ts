@@ -159,9 +159,7 @@ export class AppComponent  implements OnInit {
     const p = a => { console.log(n, a); n++; return a; };
     // start of events request
     getEvents()
-      .then(p)
       .then(getEventsCharacters)
-      .then(p)
       .then(saveEvents)
       .then(updateAllCharactersEventLinks)
       .then(renderGraph)
