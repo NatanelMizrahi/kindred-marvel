@@ -18,9 +18,22 @@ export class Event {
     this.marvelURL = event.urls.filter(url => url.type === 'detail')[0].url;
     this.characterIds = new Set();
   }
+
   updateCharacters(characters: CharIdObject[]) {
     characters.forEach(char => this.characterIds.add(char.id));
   }
 
+  // only serialize the following when exporting to JSON
+  toJSON() {
+    return {
+      eventId: this.id,
+      eventTitle: this.title,
+      description: this.description,
+      numOfCharacters: this.numCharacters,
+      thumbnailURL: this.thumbnailURL,
+      marvelURL: this.marvelURL,
+      characterIds: [...this.characterIds]
+    };
+  }
 }
 

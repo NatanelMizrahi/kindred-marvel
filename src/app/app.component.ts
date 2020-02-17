@@ -8,7 +8,7 @@ import {flatten} from '@angular/compiler';
 import {Event} from './api/event';
 import {D3Service} from './d3';
 import {TeamName} from './api/types';
-
+import { saveAs } from 'file-saver';
 type IdPair = string;
 type CharName = string;
 type CharacterId = number;
@@ -157,6 +157,10 @@ export class AppComponent  implements OnInit {
       .then(registerEvents);
     let n = 0;
     const p = a => { console.log(n, a); n++; return a; };
+
+    // const exportToJSON = () => console.log(JSON.stringify([...this.charMap.values()],null, 2));
+    const exportToJSON = () => window.open("data:text/json," + encodeURIComponent(JSON.stringify([...this.charMap.values()],null, 2)),
+      "_blank").focus();
     // start of events request
     getEvents()
       .then(getEventsCharacters)
@@ -212,6 +216,7 @@ export class AppComponent  implements OnInit {
     this.updateActiveLinks();
   }
 
+
   private chooseNClique(numCharacters: number) {
     console.log('rendering graph');
     const nodeSizeComparator = (nodeA, nodeB) => nodeB.linkCount - nodeA.linkCount;
@@ -233,5 +238,13 @@ export class AppComponent  implements OnInit {
   private setChosenChars(name: string) {
     const char = this.getCharFromName(name);
     this.d3Service.chooseCharacter(char);
+  }
+  exportToJSON() {
+    const events = [...this.events.values()];
+    const characters = [...this.charMap.values()];
+    const exportData = JSON.stringify({events, characters}, null, 2);
+    const blob = new Blob([exportData], { type: 'application/json' });
+    saveAs(blob, 'kindredMarvelExport.json');
+    // window.open(window.URL.createObjectURL(blob),  '_blank').focus();
   }
 }

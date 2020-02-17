@@ -102,5 +102,20 @@ export class Character {
       }
     }
   }
+
+  // only serialize the following when exporting to JSON
+  toJSON() {
+    const allies = {};
+    const eventConnections = {};
+    const eventIds = [...this.events];
+    for (const [char, teams] of this.allies.entries()) {
+      allies[char] = [...teams];
+    }
+    for (const [char, events] of this.connections.entries()) {
+      eventConnections[char] = [...events];
+    }
+    const { id, name, alignment, description, powers, fullName, thumbnailURL, marvelURL} = this;
+    return { id, name, alignment, description, powers, fullName, thumbnailURL, marvelURL, eventIds, allies, eventConnections};
+  }
 }
 

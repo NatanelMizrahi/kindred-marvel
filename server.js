@@ -41,7 +41,6 @@ function crossReferenceWikiAndMarvelDB([wikiCharactersMap, marvelCharacters]){
       });
     else
       characterDataMap.set(character.name, character);
-    // console.log('!!!', character.name);
   }
   const alliancesSet = new Set([...characterDataMap.values()].map(char => char.alliances).flat());
   for (const [charName, charData] of characterDataMap.entries()){
@@ -61,7 +60,4 @@ function getAllEventCharactersData(req,res){
     .then(eventCharacters => res.status(201).json(eventCharacters))
     .catch(err => res.status(503).json(err)).catch(console.error);
 }
-
-function p(x){console.log(x); return x;}
-
 //TODO: status: wiki cache works, need to integrate to server (cross reference with marvel API) + do clean up.

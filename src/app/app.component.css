@@ -42,6 +42,11 @@
   bottom:0;
 }
 
+.git-icon{
+  height: 18px;
+  width: auto;
+}
+
 /* loader */
 .center {
   position: absolute;

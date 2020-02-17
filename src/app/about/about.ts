@@ -22,7 +22,8 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
       <div class="modal-body">
         <h5>The Goal</h5>
-        <p>Beginning this project, our goal was to create a platform that enables users to explore and gain insights about the nature of the connections between Marvel Comics characters.</p>
+        <p>This project was created as a part of the <a href="https://www.dh-bgu.org/cs/" target="_blank">Digital Humanities course in Ben-Gurion University</a>.
+           The goal was to create a platform that enables users to explore and gain insights about the nature of the connections between Marvel Comics characters.</p>
         <hr>
 
         <h5>The Data</h5>
@@ -86,7 +87,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
     </ng-template>
 
     <a href="#" (click)="open(content)">
-      ABOUT
+      About
     </a>`
 })
 

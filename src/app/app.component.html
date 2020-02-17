@@ -56,14 +56,15 @@
 
 <div class="footer">
   <div class="links">
-    <a target="_blank" href="http://marvel.com">
-      Data provided by Marvel. © 2019 MARVEL
+    <a target="_blank" href="https://github.com/NatanelMizrahi/kindred-marvel">
+      <img class="git-icon" src="assets/GitHub.png"> GitHub
     </a>
     &bull;
-<!--    <a target="_blank" href="http://marvel.com">-->
-<!--      ABOUT-->
-<!--    </a>-->
     <about-modal></about-modal>
+    <span *ngIf="loaded">
+      &bull;
+      <a (click)="exportToJSON()" href="#">export to JSON</a>
+    </span>
   </div>
 </div>
 
