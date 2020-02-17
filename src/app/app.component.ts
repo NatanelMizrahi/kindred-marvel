@@ -155,12 +155,7 @@ export class AppComponent  implements OnInit {
     const getEvents = () => this.apiService
       .getEvents(this.eventLimit)
       .then(registerEvents);
-    let n = 0;
-    const p = a => { console.log(n, a); n++; return a; };
 
-    // const exportToJSON = () => console.log(JSON.stringify([...this.charMap.values()],null, 2));
-    const exportToJSON = () => window.open("data:text/json," + encodeURIComponent(JSON.stringify([...this.charMap.values()],null, 2)),
-      "_blank").focus();
     // start of events request
     getEvents()
       .then(getEventsCharacters)
@@ -242,7 +237,13 @@ export class AppComponent  implements OnInit {
   exportToJSON() {
     const events = [...this.events.values()];
     const characters = [...this.charMap.values()];
-    const exportData = JSON.stringify({events, characters}, null, 2);
+    const isIdArray = v => Array.isArray(v) && v.every(x => typeof x === 'number');
+    const oneLineArrays = (k, v) => isIdArray(v) ? JSON.stringify(v) : v;
+    const exportData = JSON.stringify({events, characters}, oneLineArrays, 2)
+      .replace(/"\[/g, '[')
+      .replace(/\]"/g, ']')
+      .replace(/\\"/g, '"')
+      .replace(/""/g, '"');
     const blob = new Blob([exportData], { type: 'application/json' });
     saveAs(blob, 'kindredMarvelExport.json');
     // window.open(window.URL.createObjectURL(blob),  '_blank').focus();

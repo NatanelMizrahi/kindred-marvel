@@ -1,13 +1,13 @@
-import {APIEvent, CharIdObject} from './types';
+import {APIEvent, CharacterId, EventId} from './types';
 
 export class Event {
-  id: number;
+  id: EventId;
   title: string;
   thumbnailURL: string;
   marvelURL: string;
   numCharacters: number;
   description: string;
-  characterIds: Set<number>;
+  characterIds: Set<CharacterId>;
 
   constructor(event: APIEvent) {
     this.id = event.id;
@@ -19,12 +19,13 @@ export class Event {
     this.characterIds = new Set();
   }
 
-  updateCharacters(characters: CharIdObject[]) {
-    characters.forEach(char => this.characterIds.add(char.id));
+  updateCharacters(characterIds: CharacterId[]) {
+    characterIds.forEach(charId => this.characterIds.add(charId));
   }
 
   // only serialize the following when exporting to JSON
   toJSON() {
+    console.log([...this.characterIds]);
     return {
       eventId: this.id,
       eventTitle: this.title,
