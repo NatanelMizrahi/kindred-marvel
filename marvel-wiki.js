@@ -9,7 +9,7 @@ const FUZZY_MATCH_THRESHOLD = 0.9;
 
 // API and MongoDB URLs
 const wikiURL = 'https://en.wikipedia.org/w/api.php?';
-const mongoURI = "mongodb://kindred:m4rv3l@ds257648.mlab.com:57648/kindred-marvel";
+const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/kindred-marvel";
 
 // MongoDB
 var wikiCharactersCollection;

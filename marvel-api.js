@@ -6,7 +6,8 @@ const RESULT_LIMIT = 100;
 const CACHE_REFRESH_RATE = 7*24*60*60*1000; //one week
 
 // marvel API and MongoDB URLs
-const mongoURI = "mongodb://kindred:m4rv3l@ds257648.mlab.com:57648/kindred-marvel";
+const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/kindred-marvel";
+
 const marvelApiAllEventsUrl = "https://gateway.marvel.com/v1/public/events?limit=100&ts=1575390183429&apikey=da725c95a6cdd0e7ace2765ba70b4b27&hash=a41b24dab9bb86d95cdd16bf6e17cb74";
 const marvelApiCharactersUrl = "https://gateway.marvel.com/v1/public/characters?limit=100&ts=1575390183429&apikey=da725c95a6cdd0e7ace2765ba70b4b27&hash=a41b24dab9bb86d95cdd16bf6e17cb74";
 
@@ -19,22 +20,33 @@ function connectMongoDB(){
   mongo.connect(mongoURI,
     { useNewUrlParser: true, useUnifiedTopology: true },
     (err, client) => {
-      if (err) {
-        console.error(err);
-        process.exit(0);
-      }
+      handleFatalError(err);
       const db = client.db("kindred-marvel");
       eventsCollection = db.collection("events");
       charactersCollection = db.collection("characters");
       eventCharactersCollection = db.collection("eventCharacters");
+      populateDataBaseIfEmpty();
       setInterval(refreshMarvelAPICachePromise, CACHE_REFRESH_RATE)
     });
 }
 
+function handleFatalError(err) {
+  if (err) {
+    console.error(err);
+    process.exit(0);
+  }
+}
+function populateDataBaseIfEmpty() {
+  eventsCollection.findOne({})
+    .then(events => (events === null) ? refreshMarvelAPICachePromise() : console.log("Database populated"))
+    .catch(handleFatalError);
+
+}
 function getAllEventsData(req, res) {
   console.log("getting all events from DB");
   eventsCollection
     .find({}).toArray()
+    .then(p)
     .then(events => res.status(201).json(events))
     .catch(err => res.status(503).json(err))
     .catch(console.error);
@@ -162,6 +174,7 @@ function cacheMarvelAPIEventCharacters() {
     .then(getEventIdsAndCount)
     .then(getEachEventCharacters)
     .then(eventCharacters => eventCharactersCollection.insertMany(eventCharacters))
+    .then(eventCharacters => console.log("Marvel API Event Characters inserted to eventCharactersCollection."))
     .catch(console.error);
 }
 
@@ -200,3 +213,4 @@ module.exports = function () {
 }
 
 function pa(x){ x.forEach(e=>console.log(e)); return x;}
+function p(x){ console.log(x); return x;}
