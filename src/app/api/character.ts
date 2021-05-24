@@ -61,7 +61,7 @@ export class Character {
     return this.connections.size;
   }
   get alignemntIcon() {
-    const img = this.alignment ? this.alignment.replace('/', '') : '0'
+    const img = this.alignment ? this.alignment.replace('/', '') : 'NA';
     return `assets/sprites/${img}.png`;
   }
   get hasPowers() {

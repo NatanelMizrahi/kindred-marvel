@@ -40,13 +40,11 @@ function populateDataBaseIfEmpty() {
   eventsCollection.findOne({})
     .then(events => (events === null) ? refreshMarvelAPICachePromise() : console.log("Database populated"))
     .catch(handleFatalError);
-
 }
 function getAllEventsData(req, res) {
   console.log("getting all events from DB");
   eventsCollection
     .find({}).toArray()
-    .then(p)
     .then(events => res.status(201).json(events))
     .catch(err => res.status(503).json(err))
     .catch(console.error);

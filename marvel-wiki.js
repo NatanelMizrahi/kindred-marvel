@@ -2,7 +2,7 @@ const rp = require("request-promise");
 const mongo = require("mongodb");
 var fuzzyMap = require('./fuzzy-map.js');
 
-const WIKI_API_RETRY_DELAY = 6000;
+const WIKI_API_RETRY_DELAY = 20000;
 const TOO_MANY_REQUESTS_ERR_CODE = 429;
 //params
 const FUZZY_MATCH_THRESHOLD = 0.9;
@@ -14,19 +14,30 @@ const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/kindred-m
 // MongoDB
 var wikiCharactersCollection;
 const CACHE_REFRESH_RATE = 7*24*60*60*1000; //one week
-
+const WIKI_PAGE_GET_TIMEOUT_MS = 5000;
+const WIKI_PAGE_GET_MAX_RETRY_REQS = 2;
+const WikiPageGetRetryCount = new Map();
 function connectMongoDB(){
   mongo.connect(mongoURI,
     { useNewUrlParser: true, useUnifiedTopology: true },
     (err, client) => {
-      if (err) {
-        console.error(err);
-        process.exit(0);
-      }
+      handleFatalError(err);
       const db = client.db("kindred-marvel");
       wikiCharactersCollection = db.collection("wikiCharacters");
+      populateWikiDataBaseIfEmpty();
       setInterval(cacheWikiAPICharacters, CACHE_REFRESH_RATE)
     });
+}
+function handleFatalError(err) {
+  if (err) {
+    console.error(err);
+    process.exit(0);
+  }
+}
+function populateWikiDataBaseIfEmpty() {
+  wikiCharactersCollection.findOne({})
+    .then(events => (events === null) ? cacheWikiAPICharacters() : console.log("Database populated"))
+    .catch(handleFatalError);
 }
 
 function tryDropCollection(collection) {
@@ -163,6 +174,15 @@ function addSearchKeywords(characterData, wikiPageTitle) {
   return characterData;
 }
 
+function getNullCharacterTimeoutPromise(promise){
+  let timeout = new Promise((resolve, reject) => {
+    setTimeout(() => resolve(null), WIKI_PAGE_GET_TIMEOUT_MS);
+  });
+  return Promise.race([
+    promise,
+    timeout
+  ]);
+}
 function getWikiPage(wikiPageTitle){
   const requestParams = {
     action: 'parse',
@@ -175,6 +195,7 @@ function getWikiPage(wikiPageTitle){
 }
 function parseWikiInfobox(wikiPageTitle){
   const fallback = () => new Promise(resolve => resolve(null));
+  // console.log("Gettig WIKI:" + wikiPageTitle);
   return getWikiPage(wikiPageTitle)
     .then(manualRedirectToInfoboxPage)
     .then(extractInfoboxText)
@@ -195,6 +216,7 @@ function getMarvelCharactersWikiData(){
     .catch(console.error)
 }
 function getAllCharactersInfoBoxes(characterWikiPageTitles){
+  console.log("characterWikiPageTitles:", characterWikiPageTitles);
   return Promise.all(characterWikiPageTitles.map(randDelayParseWikiInfobox));
 }
 function randDelay(){
@@ -202,12 +224,18 @@ function randDelay(){
   return new Promise(resolve => setTimeout(resolve, delay));
 }
 function randDelayParseWikiInfobox(wikiPageTitle) {
-  return randDelay().then(x => parseWikiInfobox(wikiPageTitle))
+  return randDelay().then(x => getNullCharacterTimeoutPromise(parseWikiInfobox(wikiPageTitle)))
 }
 function handleWikiAPIError(wikiPageTitle, err){
   if (err.statusCode === TOO_MANY_REQUESTS_ERR_CODE || err.name === 'RequestError'){
-    console.log(`Error: Too many requests, retrying GET with delay for "${wikiPageTitle}"`);
-    return randDelay().then(x => getWikiPage(wikiPageTitle))
+    WikiPageGetRetryCount[wikiPageTitle] = (WikiPageGetRetryCount[wikiPageTitle] || 0) + 1;
+    if (WikiPageGetRetryCount[wikiPageTitle] >= WIKI_PAGE_GET_MAX_RETRY_REQS) {
+      console.log(`Error: Couldn't GET Wiki page: "${wikiPageTitle}" after ${WIKI_PAGE_GET_MAX_RETRY_REQS} attempts, giving up.`);
+      return null;
+    } else {
+      console.log(`Error: Too many requests, retrying GET with delay for Wiki page: "${wikiPageTitle}"`);
+      return randDelay().then(x => getWikiPage(wikiPageTitle))
+    }
   }
   console.log(wikiPageTitle, err);
 }
@@ -274,6 +302,7 @@ class requestDB {
   }
 }
 function getMarvelCharactersWikiPages(){
+  console.log("getMarvelCharactersWikiPages()");
   const nonListPage = title => !title.startsWith('List of') && !title.startsWith('Alternative versions of');
   return Promise.all([
     getAllWikiCategoryEntries('Category:Marvel Comics characters'),
