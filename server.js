@@ -1,4 +1,5 @@
 var express = require("express");
+var path = require("path");
 var bodyParser = require("body-parser");
 var marvelWikiWrapper = require('./marvel-wiki.js');
 var marvelAPIWrapper = require('./marvel-api.js');
@@ -8,9 +9,9 @@ const marvelWiki = new marvelWikiWrapper();
 // express
 const port = process.env.PORT || 8080;
 const app = express();
-const distDir = __dirname + "/dist/";
 const jsonParser = bodyParser.json({limit: 1024 * 1024 * 20, type: "application/json"});
-app.use("/", express.static(distDir));
+
+app.use(express.static(path.join(__dirname, "dist")));
 app.use(jsonParser);
 
 // Marvel API
@@ -23,8 +24,6 @@ app.get("/events/characters/wiki",  getAllEventCharactersData);
 // Marvel & Wiki API Cache // TODO: change to PUT requests
 app.get("/cache/marvel",  marvelAPI.refreshMarvelAPICache);
 app.get("/cache/wiki",    marvelWiki.refreshWikiAPICharactersCache);
-
-app.get('/', (req,res) => res.sendFile(distDir + "index.html"));
 
 // wiki API
 app.listen(port, () => console.log(`app running on port ${port}`));
