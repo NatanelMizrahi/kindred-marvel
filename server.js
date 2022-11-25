@@ -1,6 +1,5 @@
 var express = require("express");
 var path = require("path");
-var fs = require("fs");
 var bodyParser = require("body-parser");
 var marvelWikiWrapper = require('./marvel-wiki.js');
 var marvelAPIWrapper = require('./marvel-api.js');
@@ -27,27 +26,7 @@ app.get("/cache/marvel",  marvelAPI.refreshMarvelAPICache);
 app.get("/cache/wiki",    marvelWiki.refreshWikiAPICharactersCache);
 
 // wiki API
-app.listen(port, () => {
-  fs.readdir(process.cwd(), (err, files) => {
-    files.forEach(file => {
-      console.log(file);
-    });
-  });
-  console.log("-------");
-  fs.readdir(path.join(process.cwd(), "dist"), (err, files) => {
-    files.forEach(file => {
-      console.log(file);
-    });
-  });
-  console.log("-------");
-  fs.readdir(path.join(__dirname, "dist"), (err, files) => {
-    files.forEach(file => {
-      console.log(file);
-    });
-  });
-  console.log("-------");
-  console.log(`app running on port ${port}`);
-});
+app.listen(port, () => console.log(`app running on port ${port}`));
 
 function crossReferenceWikiAndMarvelDB([wikiCharactersMap, marvelCharacters]){
   const characterDataMap = new Map();
