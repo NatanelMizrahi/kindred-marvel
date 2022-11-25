@@ -24,6 +24,8 @@ app.get("/events/characters/wiki",  getAllEventCharactersData);
 app.get("/cache/marvel",  marvelAPI.refreshMarvelAPICache);
 app.get("/cache/wiki",    marvelWiki.refreshWikiAPICharactersCache);
 
+app.get('/', (req,res) => res.sendFile(distDir + "index.html"));
+
 // wiki API
 app.listen(port, () => console.log(`app running on port ${port}`));
 
