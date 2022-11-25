@@ -1,5 +1,6 @@
 var express = require("express");
 var path = require("path");
+var fs = require("fs");
 var bodyParser = require("body-parser");
 var marvelWikiWrapper = require('./marvel-wiki.js');
 var marvelAPIWrapper = require('./marvel-api.js');
