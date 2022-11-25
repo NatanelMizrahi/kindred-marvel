@@ -10,7 +10,7 @@ const port = process.env.PORT || 8080;
 const app = express();
 const distDir = __dirname + "/dist/";
 const jsonParser = bodyParser.json({limit: 1024 * 1024 * 20, type: "application/json"});
-app.use(express.static(distDir));
+app.use("/", express.static(distDir));
 app.use(jsonParser);
 
 // Marvel API
