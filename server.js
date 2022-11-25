@@ -34,13 +34,13 @@ app.listen(port, () => {
     });
   });
   console.log("-------");
-  fs.readdir(path.join(process.cwd(), dist), (err, files) => {
+  fs.readdir(path.join(process.cwd(), "dist"), (err, files) => {
     files.forEach(file => {
       console.log(file);
     });
   });
   console.log("-------");
-  fs.readdir(path.join(__dirname, dist), (err, files) => {
+  fs.readdir(path.join(__dirname, "dist"), (err, files) => {
     files.forEach(file => {
       console.log(file);
     });
